@@ -1,0 +1,426 @@
+#include "../include/wired/wPainter.h"
+#include "../include/wired/wShader.h"
+#include "../include/wired/wPlatform.h"
+#include "../include/wired/wAssert.h"
+#include "../include/wired/wMemory.h"
+#include "../include/wired/wLog.h"
+#include "../include/wired/wError.h"
+
+#include <string.h>
+
+#define W_PAINTER_MAX_STACK 32
+
+enum wPainterDirtyFlags
+{
+	W_PAINTER_VIEWPORT,
+	W_PAINTER_SCISSOR,
+	W_PAINTER_COLOR,
+	W_PAINTER_VIEW_MAT,
+	W_PAINTER_PROJ_MAT,
+};
+
+typedef struct _wPainterState
+{
+	wRectI viewport;
+	wRectI scissor;
+
+	wMat4 projMat;
+	wMat4 viewMat;
+
+	wMat4 mvpMat;
+
+	wColor color;
+
+	unsigned dirty;
+} wPainterState;
+
+struct _wPainter
+{
+	wPainterState *state;
+	wPainterState *stack;
+	wPlatformOps *platform;
+
+	wNativeHandle vbo;
+	wNativeHandle ibo;
+
+	wNativeHandle emptyTex;
+
+	wShader *shader;
+
+	int uniformColor;
+	int uniformMvp;
+};
+
+static void setRectMesh(wPainter *painter, wRect rect)
+{
+	float vertices[] = {
+		rect.x,          rect.y,          0.0f,  0.0f, 0.0f,
+		rect.x + rect.w, rect.y,          0.0f,  1.0f, 0.0f,
+		rect.x + rect.w, rect.y + rect.h, 0.0f,  1.0f, 1.0f,
+		rect.x,          rect.y + rect.h, 0.0f,  0.0f, 1.0f
+	};
+
+	uint16_t indices[6] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	wPlatformOps *platform = painter->platform;
+
+	platform->bufferData(painter->vbo, sizeof(vertices), vertices);
+	platform->bufferData(painter->ibo, sizeof(indices),  indices);
+}
+
+static void setSlicedRectMesh(wPainter *painter, wRect rect)
+{
+	float tw = 256.0f;
+	float th = 256.0f;
+
+	float le = 64.0f;
+	float re = 64.0f;
+	float te = 64.0f;
+	float be = 64.0f;
+
+	float border = 32.0f;
+
+	float x0 = rect.x;
+	float x1 = rect.x + le;
+	float x2 = rect.x + rect.w - re;
+	float x3 = rect.x + rect.w;
+
+	float y0 = rect.y;
+	float y1 = rect.y + te;
+	float y2 = rect.y + rect.h - be;
+	float y3 = rect.y + rect.h;
+
+	float u0 = 0.0f;
+	float u1 = border / tw;
+	float u2 = 1.0f - (border / tw);
+	float u3 = 1.0f;
+
+	float v0 = 0.0f;
+	float v1 = border / tw;
+	float v2 = 1.0f - (border / th);
+	float v3 = 1.0f;
+
+	float xcoords[4] = { x0, x1, x2, x3 };
+	float ycoords[4] = { y0, y1, y2, y3 };
+	float ucoords[4] = { u0, u1, u2, u3 };
+	float vcoords[4] = { v0, v1, v2, v3 };
+
+	float vertices[16 * 5];
+
+	for (int i = 0; i < 4; ++i) {
+		for (int k = 0; k < 4; ++k)  {
+			int idx = (i * 4 + k) * 5;
+			vertices[idx + 0] = xcoords[k];
+			vertices[idx + 1] = ycoords[i];
+			vertices[idx + 2] = 0.0f;
+			vertices[idx + 3] = ucoords[k];
+			vertices[idx + 4] = vcoords[i];
+		}
+	}
+
+	uint16_t indices[] = {
+		0,1,4,4,1,5,
+		1,2,5,5,2,6,
+		2,3,6,6,3,7,
+
+		4,5,8,8,9,5,
+		5,6,9,9,6,10,
+		6,7,10,10,7,11,
+
+		8,9,12,12,9,13,
+		9,10,12,12,10,14,
+		10,11,14,14,11,15
+	};
+
+	wPlatformOps *platform = painter->platform;
+
+	platform->bufferData(painter->vbo, sizeof(vertices), vertices);
+	platform->bufferData(painter->ibo, sizeof(indices),  indices);
+}
+
+static void drawRect(wPainter *painter, wRect rect)
+{
+	if (!painter->shader) {
+		wLogWarn("No shader set for painter");
+		return;
+	}
+
+	// setRectMesh(painter, rect);
+	setSlicedRectMesh(painter, rect);
+
+	wNativeHandle shader = wShaderGetNativeHandle(painter->shader);
+
+	wPlatformOps *platform = painter->platform;
+
+	platform->shaderBind(shader);
+
+	platform->shaderSetValue(shader, painter->uniformMvp, W_SHADER_MAT4, &painter->state->mvpMat);
+	platform->shaderSetValue(shader, painter->uniformColor, W_SHADER_VEC4, &painter->state->color);
+
+	platform->draw(54, painter->vbo, painter->ibo);
+}
+
+static void bindTexture(wPainter *painter, wNativeHandle tex, int index)
+{
+	painter->platform->textureBind(tex, index);
+}
+
+static int wPainterCheckSupported(wPlatformOps *p)
+{
+	if (!p->bufferCreate)  return W_NOT_SUPPORTED;
+	if (!p->bufferDestroy) return W_NOT_SUPPORTED;
+	if (!p->bufferData)    return W_NOT_SUPPORTED;
+
+	if (!p->textureCreate) return W_NOT_SUPPORTED;
+	if (!p->textureDestroy) return W_NOT_SUPPORTED;
+	if (!p->textureData)    return W_NOT_SUPPORTED;
+
+	if (!p->shaderBind)     return W_NOT_SUPPORTED;
+	if (!p->shaderSetValue) return W_NOT_SUPPORTED;
+
+	if (!p->clear) return W_NOT_SUPPORTED;
+	if (!p->draw) return W_NOT_SUPPORTED;
+
+	if (!p->setViewport) return W_NOT_SUPPORTED;
+	if (!p->setScissor) return W_NOT_SUPPORTED;
+
+	return W_SUCCESS;
+}
+
+wPainter *wPainterAlloc()
+{
+	wPainter *ret;
+	int err;
+
+	ret = wMemAlloc(sizeof(wPainter));
+	if (!ret)
+		return NULL;
+
+	memset(ret, 0x0, sizeof(wPainter));
+
+	return ret;
+}
+
+int wPainterInit(wPainter *painter)
+{
+	wAssert(painter != NULL);
+
+	int err;
+
+	err = wPainterCheckSupported(wPlatform);
+	if (err)
+		return err;
+
+	painter->platform = wPlatform;
+
+	painter->stack = wMemAlloc(sizeof(wPainterState) * W_PAINTER_MAX_STACK);
+	if (!painter->stack) {
+		return W_OUT_OF_MEMORY;
+	}
+
+	memset(painter->stack, 0x0, sizeof(wPainterState)  * W_PAINTER_MAX_STACK);
+
+	painter->state = painter->stack;
+
+	wMat4Identity(&painter->state->projMat);
+	wMat4Identity(&painter->state->viewMat);
+	wMat4Identity(&painter->state->mvpMat);
+
+	painter->vbo = painter->platform->bufferCreate(sizeof(float) * 16 * 5, NULL);
+	painter->ibo = painter->platform->bufferCreate(sizeof(uint16_t) * 54, NULL);
+
+	painter->emptyTex = painter->platform->textureCreate();
+
+	uint32_t emptyData[] = {
+		0xFFFFFFFF,
+	};
+
+	painter->platform->textureData(painter->emptyTex, 1, 1, emptyData);
+
+
+	return W_SUCCESS;
+}
+
+void wPainterFree(wPainter *painter)
+{
+	if (!painter)
+		return;
+
+	if (painter->vbo)
+		painter->platform->bufferDestroy(painter->vbo);
+
+	if (painter->ibo)
+		painter->platform->bufferDestroy(painter->ibo);
+
+	if (painter->emptyTex)
+		painter->platform->textureDestroy(painter->emptyTex);
+
+	wMemFree(painter->stack);
+	painter->stack = NULL;
+}
+
+int wPainterSetShader(wPainter *painter, wShader *shader)
+{
+	wAssert(painter != NULL);
+
+	painter->shader = shader;
+	if (painter != NULL) {
+		painter->uniformColor = wShaderGetUniformLocation(shader, "uColor");
+
+		painter->uniformMvp = wShaderGetUniformLocation(shader, "uMvp");
+		if (painter->uniformMvp < 0) {
+			wLogWarn("uMvp not used? how does shader know where to draw");
+		}
+	}
+
+	return W_SUCCESS;
+}
+
+void wPainterDrawRect(wPainter *painter, wRect rect)
+{
+	wAssert(painter != NULL);
+
+	bindTexture(painter, painter->emptyTex, 0);
+	drawRect(painter, rect);
+}
+
+void wPainterDrawFilledRect(wPainter *painter, const wRect rect)
+{
+	wAssert(painter != NULL);
+
+	bindTexture(painter, painter->emptyTex, 0);
+	drawRect(painter, rect);
+}
+
+void wPainterDrawText(wPainter *painter, const wRect *rect, const wString *str)
+{
+	wAssert(painter != NULL);
+	wAssert(str != NULL);
+}
+
+void wPainterDrawImage(wPainter *painter, wRect rect, wImage *img)
+{
+	wAssert(painter != NULL);
+	wAssert(img != NULL);
+
+	wTexture *tex;
+
+	tex = wImageGetTexture(img);
+	if (!tex)
+		return;
+
+	wPainterDrawTexture(painter, rect, tex);
+}
+
+void wPainterDrawTexture(wPainter *painter, wRect rect, wTexture *tex)
+{
+	wAssert(painter != NULL);
+	wAssert(tex != NULL);
+
+	bindTexture(painter, wTextureGetNativeHandle(tex), 0);
+	drawRect(painter, rect);
+}
+
+void wPainterClear(wPainter *painter, wColor col)
+{
+	wAssert(painter != NULL);
+
+	painter->platform->clear(col.r, col.g, col.b, col.a);
+}
+
+void wPainterSetColor(wPainter *painter, wColor col)
+{
+	wAssert(painter != NULL);
+
+	painter->state->dirty |= W_PAINTER_COLOR;
+	painter->state->color = col;
+}
+
+wColor wPainterGetColor(wPainter *painter)
+{
+	wAssert(painter != NULL);
+
+	return painter->state->color;
+}
+
+wRectI wPainterGetScissor(wPainter *painter)
+{
+	wAssert(painter != NULL);
+
+	return painter->state->scissor;
+}
+
+void wPainterSetScissor(wPainter *painter, wRectI rect)
+{
+	wAssert(painter != NULL);
+
+	painter->state->dirty |= W_PAINTER_SCISSOR;
+	painter->state->scissor = rect;
+	painter->platform->setScissor(rect.x, rect.y,  rect.w, rect.h);
+}
+
+void wPainterSetViewport(wPainter *painter, wRectI rect)
+{
+	wAssert(painter != NULL);
+
+	painter->state->dirty |= W_PAINTER_VIEWPORT;
+	painter->state->viewport = rect;
+	painter->platform->setViewport(rect.x, rect.y,  rect.w,  rect.h);
+
+	//  wMat4Ortho(&painter->state->projMat, rect.x, rect.x + rect.w, rect.y, rect.y + rect.h, -1, 1);
+	wMat4Ortho(&painter->state->mvpMat, rect.x, rect.x + rect.w, rect.y, rect.y + rect.h, -1, 1);
+	// wMat4Transpose(&painter->state->mvpMat);
+	painter->state->dirty |= W_PAINTER_PROJ_MAT;
+
+	// wMat4Multiply(&painter->state->projMat, &painter->state->viewMat, &painter->state->mvpMat);
+}
+
+wRectI wPainterGetViewport(wPainter *painter)
+{
+	wAssert(painter != NULL);
+	return painter->state->viewport;
+}
+
+void wPainterTranslate(wPainter *painter, float x, float y, float z)
+{
+	wAssert(painter != NULL);
+
+	wMat4 m;
+	wMat4Translate(&m, x, y, z);
+
+	wMat4 r;
+	wMat4Multiply(&r, &painter->state->viewMat, &r);
+	painter->state->viewMat = r;
+	painter->state->dirty |= W_PAINTER_VIEW_MAT;
+
+	wMat4Multiply(&painter->state->projMat, &painter->state->viewMat, &painter->state->mvpMat);
+}
+
+void wPainterPushState(wPainter *painter)
+{
+	wAssert(painter != NULL);
+
+	painter->state++;
+	*painter->state = *(painter->state - 1);
+	painter->state->dirty = 0;
+}
+
+void wPainterPopState(wPainter *painter)
+{
+	wAssert(painter != NULL);
+	wAssert(painter->state != painter->stack);
+
+	wPainterState *cur = painter->state;
+	wPainterState *old = painter->state - 1;
+
+	if (cur->dirty | W_PAINTER_VIEWPORT)
+		painter->platform->setViewport(old->viewport.x, old->viewport.y, old->viewport.w,  old->viewport.h);
+
+	if (cur->dirty | W_PAINTER_SCISSOR)
+		painter->platform->setScissor(old->scissor.x, old->scissor.y, old->scissor.w, old->scissor.h);
+
+	painter->state--;
+}
