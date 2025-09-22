@@ -117,26 +117,16 @@ static size_t wFile_size(void *opaque)
 	return st.st_size;
 }
 
-int wFileAlloc(wFile **file)
+wFile *wFileAlloc()
 {
 	wFile *ret = wMemAlloc(sizeof(wFile));
-	if (!ret) {
-		*file = NULL;
-		return W_OUT_OF_MEMORY;
-	}
-
 	memset(ret, 0x0, sizeof(wFile));
-	*file = ret;
-	return W_SUCCESS;
+	return ret;
 }
 
-void wFileFree(wFile **file)
+void wFileFree(wFile *file)
 {
-	if (!*file)
-		return;
-
-	wMemFree(*file);
-	file = NULL;
+	wMemFree(file);
 }
 
 int wFileOpen(wFile *file, const wString *path, unsigned flags)
@@ -270,10 +260,7 @@ int wFileReadAll(const wString *path, wBuffer *buf)
 
 	wBufferClear(buf);
 
-	err = wFileAlloc(&file);
-	if (err)
-		return err;
-
+	file = wFileAlloc();
 	err = wFileOpen(file, path, W_FILE_READ | W_FILE_BINARY);
 	if (err)
 		goto fail;
@@ -296,13 +283,13 @@ int wFileReadAll(const wString *path, wBuffer *buf)
 	}
 
 	wFileClose(file);
-	wFileFree(&file);
+	wFileFree(file);
 
 	return W_SUCCESS;
 
 fail:
 	wFileClose(file);
-	wFileFree(&file);
+	wFileFree(file);
 
 	return err;
 }
@@ -320,9 +307,7 @@ int wFileReadAllText(const wString *path, wString *buf)
 
 	wStringClear(buf);
 
-	err = wFileAlloc(&file);
-	if (err)
-		return err;
+	file = wFileAlloc();
 
 	err = wFileOpen(file, path, W_FILE_READ | W_FILE_TEXT);
 	if (err)
@@ -346,13 +331,13 @@ int wFileReadAllText(const wString *path, wString *buf)
 	}
 
 	wFileClose(file);
-	wFileFree(&file);
+	wFileFree(file);
 
 	return W_SUCCESS;
 
 fail:
 	wFileClose(file);
-	wFileFree(&file);
+	wFileFree(file);
 
 	return err;
 }
@@ -362,12 +347,10 @@ int wFileWriteAll(const wString *path, const wBuffer *buf)
 	wAssert(path != NULL);
 	wAssert(buf != NULL);
 
-	int err;
 	wFile *file;
+	int err;
 
-	err = wFileAlloc(&file);
-	if (err)
-		return err;
+	file = wFileAlloc();
 
 	err = wFileOpen(file, path, W_FILE_WRITE | W_FILE_BINARY);
 	if (err)
@@ -378,13 +361,13 @@ int wFileWriteAll(const wString *path, const wBuffer *buf)
 		goto fail;
 
 	wFileClose(file);
-	wFileFree(&file);
+	wFileFree(file);
 
 	return W_SUCCESS;
 
 fail:
 	wFileClose(file);
-	wFileFree(&file);
+	wFileFree(file);
 
 	return err;
 }
@@ -397,9 +380,7 @@ int wFileWriteAllText(const wString *path, const wString *buf)
 	int err;
 	wFile *file;
 
-	err = wFileAlloc(&file);
-	if (err)
-		return err;
+	file = wFileAlloc();
 
 	err = wFileOpen(file, path, W_FILE_WRITE | W_FILE_TEXT);
 	if (err)
@@ -410,13 +391,13 @@ int wFileWriteAllText(const wString *path, const wString *buf)
 		goto fail;
 
 	wFileClose(file);
-	wFileFree(&file);
+	wFileFree(file);
 
 	return W_SUCCESS;
 
 fail:
 	wFileClose(file);
-	wFileFree(&file);
+	wFileFree(file);
 
 	return err;
 }

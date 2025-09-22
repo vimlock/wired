@@ -20,9 +20,6 @@ int wPlatformInit()
 	int err;
 
 	wPlatform = wMemAlloc(sizeof(wPlatformOps));
-	if (!wPlatform)
-		return W_OUT_OF_MEMORY;
-
 	memset(wPlatform, 0x0, sizeof(wPlatformOps));
 
 	err = wSdlInit(wPlatform);

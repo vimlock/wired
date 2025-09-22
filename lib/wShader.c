@@ -22,9 +22,6 @@ wShader *wShaderAlloc()
 	wShader *ret;
 
 	ret = wMemAlloc(sizeof(wShader));
-	if (!ret)
-		return NULL;
-
 	memset(ret, 0x0, sizeof(wShader));
 
 	return ret;

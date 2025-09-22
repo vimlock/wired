@@ -220,10 +220,6 @@ int wPainterInit(wPainter *painter)
 	painter->platform = wPlatform;
 
 	painter->stack = wMemAlloc(sizeof(wPainterState) * W_PAINTER_MAX_STACK);
-	if (!painter->stack) {
-		return W_OUT_OF_MEMORY;
-	}
-
 	memset(painter->stack, 0x0, sizeof(wPainterState)  * W_PAINTER_MAX_STACK);
 
 	painter->state = painter->stack;

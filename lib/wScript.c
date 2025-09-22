@@ -161,7 +161,7 @@ int wScriptVmInit()
 
 	L = luaL_newstate();
 	if (!L)
-		return W_OUT_OF_MEMORY;
+		wPanic("Could not allocate Lua state");
 
 	luaL_openlibs(L);
 

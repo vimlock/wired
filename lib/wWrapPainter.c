@@ -25,9 +25,6 @@ static int wlPainter__new(lua_State *L)
 	wPainter *self;
 
 	self = wPainterAlloc();
-	if (!self)
-		luaL_error(L, "%s", wErrorStr(W_OUT_OF_MEMORY));
-
 	err = wPainterInit(self);
 	if (err) {
 		wPainterFree(self);

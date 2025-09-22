@@ -116,11 +116,7 @@ int wStringReserve(wString *str, size_t capacity)
 	if (str->capacity >= capacity)
 		return W_SUCCESS;
 
-	char *newmem = wMemRealloc(str->data, capacity + 1);
-	if (!newmem)
-		return W_OUT_OF_MEMORY;
-
-	str->data = newmem;
+	str->data = wMemRealloc(str->data, capacity + 1);
 	str->capacity = capacity;
 
 	return W_SUCCESS;

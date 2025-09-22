@@ -1,4 +1,5 @@
 #include "../include/wired/wMemory.h"
+#include "../include/wired/wError.h"
 
 #include <stdlib.h>
 
@@ -7,7 +8,11 @@ void *wMemAlloc(size_t size)
 	if (size == 0)
 		size = 1;
 
-	return malloc(size);
+	void *ret = malloc(size);
+	if (!ret)
+		wPanic("Out of memory");
+
+	return ret;
 }
 
 void *wMemRealloc(void *ptr, size_t size)
@@ -15,7 +20,11 @@ void *wMemRealloc(void *ptr, size_t size)
 	if (size == 0)
 		size = 1;
 
-	return realloc(ptr, size);
+	void *ret = realloc(ptr, size);
+	if (!ret)
+		wPanic("Out of memory");
+
+	return ret;
 }
 
 void wMemFree(void *ptr)

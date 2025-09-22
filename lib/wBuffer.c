@@ -51,11 +51,7 @@ int wBufferReserve(wBuffer *buf, size_t capacity)
 	if (buf->capacity >= capacity)
 		return W_SUCCESS;
 
-	char *newmem = wMemRealloc(buf->data, capacity);
-	if (!newmem)
-		return W_OUT_OF_MEMORY;
-
-	buf->data = newmem;
+	buf->data = wMemRealloc(buf->data, capacity);
 	buf->capacity = capacity;
 
 	return W_SUCCESS;

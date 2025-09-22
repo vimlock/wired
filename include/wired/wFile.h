@@ -38,8 +38,8 @@ typedef struct _wFile
 	void *opaque;
 } wFile;
 
-int wFileAlloc(wFile **file);
-void wFileFree(wFile **file);
+wFile *wFileAlloc();
+void wFileFree(wFile *file);
 
 int wFileOpen(wFile *file, const wString *path, unsigned flags);
 void wFileClose(wFile *file);

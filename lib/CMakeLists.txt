@@ -34,11 +34,15 @@ add_library(Wired SHARED
 	wWrapWindow.c
 )
 
+find_package(SDL2 REQUIRED)
+find_package(OpenGL REQUIRED)
+
+target_link_libraries(Wired PUBLIC lua5.3)
+target_link_libraries(Wired PUBLIC SDL2::SDL2)
+target_link_libraries(Wired PUBLIC OpenGL::GL)
+
 add_executable(WiredEngine
 	wMain.c
 )
 
-target_link_libraries(WiredEngine Wired)
-target_link_libraries(WiredEngine lua5.4)
-target_link_libraries(WiredEngine SDL2)
-target_link_libraries(WiredEngine GL)
+target_link_libraries(WiredEngine PUBLIC Wired)

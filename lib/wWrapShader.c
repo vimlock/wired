@@ -25,12 +25,12 @@ wShader * wlCheckShader(lua_State *L, int index)
 static int wlShader__new(lua_State *L)
 {
 	wShader *self = wShaderAlloc();
-	if (!self)
-		luaL_error(L, "%s", wErrorStr(W_OUT_OF_MEMORY));
 
 	int err = wShaderInit(self);
-	if (err)
+	if (err) {
+		wShaderFree(self);
 		luaL_error(L, "%s", wErrorStr(err));
+	}
 
 	wlPushShader(L, self);
 	return 1;

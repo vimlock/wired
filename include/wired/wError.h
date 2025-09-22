@@ -6,10 +6,10 @@ enum wError
 	W_INVALID_OPERATION,
 	W_INVALID_ARGUMENT,
 	W_IO_ERROR,
-	W_OUT_OF_MEMORY,
 	W_NOT_IMPLEMENTED,
 	W_NOT_SUPPORTED,
 	W_PARSE_ERROR,
 };
 
 const char *wErrorStr(int error);
+void wPanic(const char *msg);

@@ -42,11 +42,7 @@ wGuiNode * wGuiNodeCreateChild(wGuiNode *parent)
 
 int wGuiNodeAddChild(wGuiNode *node, wGuiNode *child)
 {
-	wGuiNode **newChildren = wMemRealloc(node->children, (node->numChildren + 1) * sizeof(wGuiNode*));
-	if (!newChildren)
-		return W_OUT_OF_MEMORY;
-
-	node->children = newChildren;
+	 node->children = wMemRealloc(node->children, (node->numChildren + 1) * sizeof(wGuiNode*));
 	node->children[node->numChildren++] = child;
 	child->parent = node;
 
