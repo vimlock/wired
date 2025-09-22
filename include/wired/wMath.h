@@ -66,6 +66,7 @@ wRect wRectGrow(wRect rect, float amount);
 wRectI wRectIShrink(wRectI rect, int amount);
 wRectI wRectIGrow(wRectI rect, int amount);
 
+void wMat4Zero(wMat4 *m);
 void wMat4Ortho(wMat4 *m, float left, float right, float top, float bottom, float near, float far);
 void wMat4Identity(wMat4 *m);
 void wMat4Translate(wMat4 *m, float x, float y, float z);

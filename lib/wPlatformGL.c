@@ -68,6 +68,8 @@ static int loadProcs(wPlatformOps *p)
 
 #define PROC(name) if (!(name = p->getProcAddress(#name))) return W_NOT_SUPPORTED
 
+	PROC(glDebugMessageCallback);
+
 	PROC(glCreateProgram);
 	PROC(glDeleteProgram);
 	PROC(glLinkProgram);
@@ -109,8 +111,6 @@ static int loadProcs(wPlatformOps *p)
 	PROC(glVertexArrayAttribBinding);
 	PROC(glVertexArrayVertexBuffer);
 	PROC(glVertexArrayElementBuffer);
-
-	PROC(glDebugMessageCallback);
 
 	return W_SUCCESS;
 }
@@ -359,6 +359,9 @@ static int draw(int numElements, wNativeHandle vbo, wNativeHandle ibo)
 	glEnableVertexArrayAttrib(vao, 1);
 
 	glDrawElements(GL_TRIANGLES, numElements, GL_UNSIGNED_SHORT, 0);
+
+	glDisableVertexArrayAttrib(vao, 0);
+	glDisableVertexArrayAttrib(vao, 1);
 
 	return W_SUCCESS;
 }

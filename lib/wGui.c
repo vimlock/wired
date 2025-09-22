@@ -3,6 +3,8 @@
 #include "../include/wired/wPainter.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wMemory.h"
+#include "../include/wired/wError.h"
+#include "../include/wired/wLog.h"
 
 #include <string.h>
 
@@ -14,15 +16,16 @@ static void wGuiNode_paint(wGuiNode *self, wPainter *painter)
 		wGuiNodePaint(wGuiGetChild(self, i), painter);
 }
 
-wGuiNode *wGuiNodeAlloc()
+wGuiNode *wGuiNodeAlloc(int privSize)
 {
 	wGuiNode *ret;
 
-	ret = wMemAlloc(sizeof(wGuiNode));
-	memset(ret, 0x0, sizeof(wGuiNode));
+	ret = wMemAlloc(sizeof(wGuiNode) + privSize);
+	memset(ret, 0x0, sizeof(wGuiNode) + privSize);
 
 	ret->visible = true;
 	ret->paint = wGuiNode_paint;
+	ret->priv = ret + 1;
 
 	return ret;
 }
@@ -37,6 +40,19 @@ wGuiNode * wGuiNodeCreateChild(wGuiNode *parent)
 	return NULL;
 }
 
+int wGuiNodeAddChild(wGuiNode *node, wGuiNode *child)
+{
+	wGuiNode **newChildren = wMemRealloc(node->children, (node->numChildren + 1) * sizeof(wGuiNode*));
+	if (!newChildren)
+		return W_OUT_OF_MEMORY;
+
+	node->children = newChildren;
+	node->children[node->numChildren++] = child;
+	child->parent = node;
+
+	return W_SUCCESS;
+}
+
 void wGuiNodePaint(wGuiNode *node, wPainter *painter)
 {
 	if (!node->visible)
@@ -46,7 +62,7 @@ void wGuiNodePaint(wGuiNode *node, wPainter *painter)
 		return;
 
 	wPainterPushState(painter);
-	wPainterTranslate(painter, node->rect.x, node->rect.y, 0.0f);
+	// wPainterTranslate(painter, node->rect.x, node->rect.y, 0.0f);
 	node->paint(node, painter);
 	wPainterPopState(painter);
 }
@@ -60,6 +76,11 @@ void wGuiUpdateLayout(wGuiNode *node)
 		return;
 
 	node->layout(node);
+
+	for (int i = 0; i < wGuiGetNumChildren(node); ++i) {
+		wGuiNode *child = wGuiGetChild(node, i);
+		wGuiUpdateLayout(child);
+	}
 }
 
 int wGuiGetNumChildren(wGuiNode *node)
@@ -104,18 +125,48 @@ bool wGuiIsVisible(wGuiNode *node)
 	return node->visible;
 }
 
+void wGuiSetSize(wGuiNode *node, wVec2 size)
+{
+	wAssert(node != NULL);
+	node->rect.w = size.x;
+	node->rect.h = size.y;
+}
+
+wVec2 wGuiGetSize(wGuiNode *node)
+{
+	wAssert(node != NULL);
+	wVec2 ret = { node->rect.w, node->rect.h };
+	return ret;
+}
+
 /* --------- Image --------- */
+
+typedef struct _wGuiImagePriv
+{
+	wImage *image;
+} wGuiImagePriv;
 
 static void wGuiImage_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
-	wPainterDrawImage(painter, wGuiGetGeometry(self), self->image);
+	wGuiImagePriv *priv = self->priv;
+	wPainterDrawImage(painter, wGuiGetGeometry(self), priv->image);
 	wGuiNode_paint(self, painter);
 }
 
-wGuiNode *wGuiImage(wGuiNode *parent)
+static void wGuiImage_layout(wGuiNode *self)
 {
-	wGuiNode *ret = wGuiNodeAlloc();
+	wRect rect = wGuiGetGeometry(self);
+
+	for (int i = 0; i < wGuiGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiGetChild(self, i);
+		wGuiSetGeometry(child, rect);
+	}
+}
+
+wGuiNode *wGuiImage()
+{
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiImagePriv));
 	if (!ret)
 		return NULL;
 
@@ -127,16 +178,33 @@ wGuiNode *wGuiImage(wGuiNode *parent)
 
 /* --------- Button --------- */
 
+typedef struct _wGuiButtonPriv
+{
+	bool disabled;
+} wGuiButtonPriv;
+
 static void wGuiButton_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
-	wPainterDrawRect(painter, wGuiGetGeometry(self));
+	wRect rect = wGuiGetGeometry(self);
+	wPainterDrawRect(painter, rect);
 	wGuiNode_paint(self, painter);
+}
+
+static void wGuiButton_layout(wGuiNode *self)
+{
+	wRect rect = wGuiGetGeometry(self);
+
+	for (int i = 0; i < wGuiGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiGetChild(self, i);
+		wGuiSetGeometry(child, rect);
+	}
 }
 
 static void wGuiButton_mouseEvent(wGuiNode *self)
 {
 	wAssert(self != NULL);
+	wLogInfo("Button clicked");
 }
 
 static void wGuiButton_keyboardEvent(wGuiNode *self)
@@ -144,14 +212,15 @@ static void wGuiButton_keyboardEvent(wGuiNode *self)
 	wAssert(self != NULL);
 }
 
-wGuiNode *wGuiButton(wGuiNode *parent)
+wGuiNode *wGuiButton()
 {
-	wGuiNode *ret = wGuiNodeAlloc();
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiButtonPriv));
 	if (!ret)
 		return NULL;
 
 	ret->type = W_GUI_BUTTON;
 	ret->paint = wGuiButton_paint;
+	ret->layout = wGuiButton_layout;
 	ret->mouseEvent = wGuiButton_mouseEvent;
 	ret->keyboardEvent = wGuiButton_keyboardEvent;
 
@@ -160,15 +229,19 @@ wGuiNode *wGuiButton(wGuiNode *parent)
 
 /* --------- Label --------- */
 
+typedef struct _wGuiLabelPriv
+{
+	wString text;
+} wGuiLabelPriv;
+
 static void wGuiLabel_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
-	wPainterDrawImage(painter, wGuiGetGeometry(self), self->image);
 }
 
-wGuiNode *wGuiLabel(wGuiNode *parent)
+wGuiNode *wGuiLabel()
 {
-	wGuiNode *ret = wGuiNodeAlloc();
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiLabelPriv));
 	if (!ret)
 		return NULL;
 
@@ -179,14 +252,22 @@ wGuiNode *wGuiLabel(wGuiNode *parent)
 
 /* --------- Slider --------- */
 
+typedef struct _wGuiSliderPriv
+{
+	int min;
+	int max;
+} wGuiSliderPriv;
+
 static void wGuiSlider_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
+	wAssert(painter != NULL);
 
+	wGuiStyle *style = self->style;
 	wRect rect = wGuiGetGeometry(self);
 
-	wRect handle = { 0, 0, 16, rect.h};
-	wRect gutter = { 0, 0, rect.w, 8 };
+	wRect handle = { 0, 0, style->sliderHandleSize, rect.h};
+	wRect gutter = { 0, 0, rect.w, style->sliderGutterSize };
 
 	wPainterDrawRect(painter, gutter);
 	wPainterDrawRect(painter, handle);
@@ -202,9 +283,9 @@ static void wGuiSlider_keyboardEvent(wGuiNode *self)
 	wAssert(self != NULL);
 }
 
-wGuiNode *wGuiSlider(wGuiNode *parent)
+wGuiNode *wGuiSlider()
 {
-	wGuiNode *ret = wGuiNodeAlloc();
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiSliderPriv));
 	if (!ret)
 		return NULL;
 
@@ -218,6 +299,12 @@ wGuiNode *wGuiSlider(wGuiNode *parent)
 
 /* --------- ScrollArea --------- */
 
+struct _wGuiScrollPriv
+{
+	bool scrollX;
+	bool scrollY;
+} wGuiScrollPriv;
+
 static void wGuiScrollArea_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
@@ -228,9 +315,9 @@ static void wGuiScrollArea_mouseEvent(wGuiNode *self)
 	wAssert(self != NULL);
 }
 
-wGuiNode *wGuiScrollArea(wGuiNode *parent)
+wGuiNode *wGuiScrollArea()
 {
-	wGuiNode *ret = wGuiNodeAlloc();
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiScrollPriv));
 	if (!ret)
 		return NULL;
 
@@ -248,13 +335,31 @@ static void wGuiVBox_layout(wGuiNode *self)
 	wAssert(self != NULL);
 
 	wRect rect = wGuiGetGeometry(self);
+	float hsize = rect.h;
+
+	float minsize = 0.0f;
+
+	for (int i = 0; i < wGuiGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiGetChild(self, i);
+		minsize += child->minSize.y;
+	}
+
+	float h = (hsize - minsize) / wGuiGetNumChildren(self);
+	float y = 0.0f;
+
+	for (int i = 0; i < wGuiGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiGetChild(self, i);
+		wRect crect = { 0, y, rect.w, h };
+		wGuiSetGeometry(child, crect);
+		y += crect.h;
+	}
 }
 
-wGuiNode *wGuiVBox(wGuiNode *parent)
+wGuiNode *wGuiVBox()
 {
 	wGuiNode *ret;
 
-	ret = wGuiNodeAlloc();
+	ret = wGuiNodeAlloc(0);
 	if (!ret)
 		return ret;
 
@@ -271,11 +376,11 @@ static void wGuiHBox_layout(wGuiNode *self)
 	wAssert(self != NULL);
 }
 
-wGuiNode *wGuiHBox(wGuiNode *parent)
+wGuiNode *wGuiHBox()
 {
 	wGuiNode *ret;
 
-	ret = wGuiNodeAlloc();
+	ret = wGuiNodeAlloc(0);
 	if (!ret)
 		return ret;
 
@@ -287,16 +392,21 @@ wGuiNode *wGuiHBox(wGuiNode *parent)
 
 /* --------- Grid --------- */
 
+struct _wGuiGridPriv
+{
+	int cols;
+} wGuiGridPriv;
+
 static void wGuiGrid_layout(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-wGuiNode *wGuiGrid(wGuiNode *parent)
+wGuiNode *wGuiGrid()
 {
 	wGuiNode *ret;
 
-	ret = wGuiNodeAlloc();
+	ret = wGuiNodeAlloc(sizeof(wGuiGridPriv));
 	if (!ret)
 		return NULL;
 
@@ -307,6 +417,11 @@ wGuiNode *wGuiGrid(wGuiNode *parent)
 }
 
 /* --------- Script --------- */
+
+typedef struct _wGuiScriptPriv
+{
+	wString filename;
+} wGuiScriptPriv;
 
 static void wGuiScript_paint(wGuiNode *self, wPainter *painter)
 {
@@ -320,11 +435,11 @@ static void wGuiScript_mouseEvent(wGuiNode *self)
 {
 }
 
-wGuiNode *wGuiScriptNode(wGuiNode *parent)
+wGuiNode *wGuiScriptNode()
 {
 	wGuiNode *ret;
 
-	ret = wGuiNodeAlloc();
+	ret = wGuiNodeAlloc(sizeof(wGuiScriptPriv));
 	if (!ret)
 		return NULL;
 

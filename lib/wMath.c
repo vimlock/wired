@@ -77,6 +77,11 @@ void wMat4Ortho(wMat4 *m, float l, float r, float t, float b, float n, float f)
 	m->m[3][2] = -(f + n) / (f - n);
 }
 
+void wMat4Zero(wMat4 *m)
+{
+	memset(m, 0x0, sizeof(wMat4));
+}
+
 void wMat4Identity(wMat4 *m)
 {
 	memset(m, 0x0, sizeof(wMat4));
@@ -109,12 +114,15 @@ void wMat4Translate(wMat4 *m, float x, float y, float z)
 
 void wMat4Multiply(const wMat4 *a, const wMat4 *b, wMat4 *ret)
 {
+	wMat4Zero(ret);
+
 	for (int i = 0; i < 4; ++i) {
-		ret->m[i][0] = a->m[i][0] * b->m[0][i];
-		ret->m[i][1] = a->m[i][1] * b->m[1][i];
-		ret->m[i][2] = a->m[i][2] * b->m[2][i];
-		ret->m[i][3] = a->m[i][3] * b->m[3][i];
-	}
+		for (int j = 0; j < 4; ++j) {
+			for (int k = 0; k < 4; ++k) {
+				ret->m[i][j] += a->m[i][k] * b->m[k][j];
+			}
+		}
+	}	
 }
 
 wVec4 wMat4MultiplyPoint(const wMat4 *m, wVec4 v)

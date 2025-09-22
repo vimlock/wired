@@ -33,6 +33,14 @@ static int windowCreate(int w, int h)
 		return W_INVALID_OPERATION;
 	}
 
+	err = SDL_GL_MakeCurrent(window, context);
+	if (err < 0)  {
+		wLogError("Could not make context current: %s", SDL_GetError());
+		return W_INVALID_OPERATION;
+	}
+
+	wLogDebug("Initializing OpenGL functions");
+
 	err = wGlInit(wPlatform);
 	if (err)
 		return err;
@@ -118,12 +126,20 @@ int wSdlInit(wPlatformOps *p)
 {
 	int err;
 
+
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 
 	err = SDL_Init(SDL_INIT_VIDEO);
 	if (err < 0) {
 		wLogError("Failed to initialize SDL: %s", SDL_GetError());
 		return W_INVALID_OPERATION;
+	}
+
+	wLogDebug("Loading OpenGL library");
+	err = SDL_GL_LoadLibrary(NULL);
+	if (err < 0) {
+		wLogError("Could not load GL library: %s", SDL_GetError());
+		return W_NOT_SUPPORTED;
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -136,12 +152,6 @@ int wSdlInit(wPlatformOps *p)
 	// SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	// SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 	
-	err = SDL_GL_LoadLibrary(NULL);
-	if (err < 0) {
-		wLogError("Could not load GL library: %s", SDL_GetError());
-		return W_NOT_SUPPORTED;
-	}
-
 	p->windowCreate = windowCreate;
 	p->windowDestroy = windowDestroy;
 	p->windowSetIcon = windowSetIcon;

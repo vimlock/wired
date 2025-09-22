@@ -24,18 +24,30 @@ enum wGuiNodeType
 	W_GUI_SCRIPT,
 };
 
+typedef struct _wGuiStyle
+{
+	int sliderGutterSize;
+	int sliderHandleSize;
+} wGuiStyle;
+
 struct _wGuiNode
 {
 	int type;
 
 	wRect rect;
+
+	wIVec2 minSize;
+	wIVec2 maxSize;
+
 	bool visible;
 
 	wGuiNode *parent;
 	wGuiNode **children;
 	int numChildren;
 
-	wImage *image;
+	wGuiStyle *style;
+
+	void *priv;
 
 	void (*layout)(wGuiNode *self);
 	void (*paint)(wGuiNode *self, wPainter *painter);
@@ -43,7 +55,7 @@ struct _wGuiNode
 	void (*keyboardEvent)(wGuiNode *self);
 };
 
-wGuiNode *wGuiNodeAlloc();
+wGuiNode *wGuiNodeAlloc(int privSize);
 void wGuiNodeFree(wGuiNode *node);
 
 void wGuiNodePaint(wGuiNode *node, wPainter *painter);
@@ -55,21 +67,40 @@ void wGuiUpdateLayout(wGuiNode *node);
 int wGuiGetNumChildren(wGuiNode *node);
 wGuiNode *wGuiGetChild(wGuiNode *node, int child);
 
+int wGuiNodeAddChild(wGuiNode *node, wGuiNode *child);
+
 void wGuiSetGeometry(wGuiNode *node, wRect rect);
 wRect wGuiGetGeometry(wGuiNode *node);
+
+wVec2 wGuiGetPosition(wGuiNode *node);
+void wGuiSetPosition(wGuiNode *node, wVec2 pos);
+
+wVec2 wGuiGetSize(wGuiNode *node);
+void wGuiSetSize(wGuiNode *node, wVec2 size);
 
 void wGuiSetVisible(wGuiNode *node, bool visible);
 bool wGuiIsVisible(wGuiNode *node);
 
-wGuiNode *wGuiImage(wGuiNode *parent);
-wGuiNode *wGuiButton(wGuiNode *parent);
-wGuiNode *wGuiLabel(wGuiNode *parent);
-wGuiNode *wGuiVBox(wGuiNode *parent);
-wGuiNode *wGuiHBox(wGuiNode *parent);
-wGuiNode *wGuiGrid(wGuiNode *parent);
-wGuiNode *wGuiSlider(wGuiNode *parent);
-wGuiNode *wGuiScrollArea(wGuiNode *parent);
-wGuiNode *wGuiScript(wGuiNode *parent);
+wGuiNode *wGuiImage();
+int wGuiImageSetImage(wGuiNode *node, wImage *img);
+
+wGuiNode *wGuiButton();
+
+wGuiNode *wGuiLabel();
+int wGuiLabelSetText(wGuiNode *node, wString *str);
+
+wGuiNode *wGuiVBox();
+
+wGuiNode *wGuiHBox();
+
+wGuiNode *wGuiGrid();
+int wGuiGridSetSize(wGuiNode *node, int cols);
+
+wGuiNode *wGuiSlider();
+int wGuiSliderSetRange(wGuiNode *node, int min, int max);
+
+wGuiNode *wGuiScrollArea();
+wGuiNode *wGuiScript();
 
 /* ---------- Clipboard ---------- */
 

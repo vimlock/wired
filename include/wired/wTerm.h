@@ -1,13 +1,13 @@
 #pragma once
 
-#define W_TERM_RED     "\e[31m"
-#define W_TERM_GREEN   "\e[32m"
-#define W_TERM_YELLOW  "\e[33m"
-#define W_TERM_BLUE    "\e[34m"
-#define W_TERM_MAGENTA "\e[35m"
-#define W_TERM_CYAN    "\e[36m"
-#define W_TERM_WHITE   "\e[37m"
+#define W_TERM_RED     "\33[31m"
+#define W_TERM_GREEN   "\33[32m"
+#define W_TERM_YELLOW  "\33[33m"
+#define W_TERM_BLUE    "\33[34m"
+#define W_TERM_MAGENTA "\33[35m"
+#define W_TERM_CYAN    "\33[36m"
+#define W_TERM_WHITE   "\33[37m"
 
-#define W_TERM_RESET "\e[0m"
+#define W_TERM_RESET "\33[0m"
 
-#define W_TERM_BOLD "\e[1m"
+#define W_TERM_BOLD "\33[1m"

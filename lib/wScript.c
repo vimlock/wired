@@ -164,6 +164,7 @@ static int wlInitLibs()
 	wlRegisterPainter(L);
 	wlRegisterLog(L);
 	wlRegisterWindow(L);
+	wlRegisterGui(L);
 
 	return W_SUCCESS;
 }
@@ -254,6 +255,7 @@ int wScriptLoad(const wString *script)
 int wScriptCall(wString *script, wString *function)
 {
 	wAssert(script != NULL);
+	wAssert(wStringSize(script) != 0);
 	wAssert(function != NULL);
 
 	int err;

@@ -32,13 +32,6 @@ int wPlatformInit()
 		return err;
 	}
 
-	err = wGlInit(wPlatform);
-	if (err) {
-		wMemFree(wPlatform);
-		wPlatform = NULL;
-		return W_INVALID_OPERATION;
-	}
-
 	return W_SUCCESS;
 }
 

@@ -7,7 +7,10 @@
 #include <stdio.h>
 
 #include <sys/stat.h>
+
+#if __linux__ || __APPLE__
 #include <unistd.h>
+#endif
 
 static int wFile_read(void *opaque, size_t size, void *buf, size_t *nread)
 {
@@ -82,7 +85,7 @@ static int wFile_seek(void *opaque, size_t offset, int whence)
 			return W_INVALID_ARGUMENT;
 	}
 
-	err = fseek(opaque, offset, whence);
+	err = fseek(opaque, (long)offset, whence);
 	if (err)
 		return W_IO_ERROR;
 
@@ -106,7 +109,7 @@ static size_t wFile_size(void *opaque)
 
 	struct stat st;
 
-	fd = fileno(opaque);
+	fd = _fileno(opaque);
 	err = fstat(fd, &st);
 	if (err)
 		return 0;

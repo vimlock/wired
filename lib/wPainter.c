@@ -12,11 +12,11 @@
 
 enum wPainterDirtyFlags
 {
-	W_PAINTER_VIEWPORT,
-	W_PAINTER_SCISSOR,
-	W_PAINTER_COLOR,
-	W_PAINTER_VIEW_MAT,
-	W_PAINTER_PROJ_MAT,
+	W_PAINTER_VIEWPORT = 1 << 0,
+	W_PAINTER_SCISSOR  = 1 << 1,
+	W_PAINTER_COLOR    = 1 << 2,
+	W_PAINTER_VIEW_MAT = 1 << 3,
+	W_PAINTER_PROJ_MAT = 1 << 4,
 };
 
 typedef struct _wPainterState
@@ -53,7 +53,7 @@ struct _wPainter
 
 static void setRectMesh(wPainter *painter, wRect rect)
 {
-	float vertices[] = {
+	float vertices[4*5] = {
 		rect.x,          rect.y,          0.0f,  0.0f, 0.0f,
 		rect.x + rect.w, rect.y,          0.0f,  1.0f, 0.0f,
 		rect.x + rect.w, rect.y + rect.h, 0.0f,  1.0f, 1.0f,
@@ -148,8 +148,8 @@ static void drawRect(wPainter *painter, wRect rect)
 		return;
 	}
 
-	// setRectMesh(painter, rect);
-	setSlicedRectMesh(painter, rect);
+	setRectMesh(painter, rect);
+	// setSlicedRectMesh(painter, rect);
 
 	wNativeHandle shader = wShaderGetNativeHandle(painter->shader);
 
@@ -157,10 +157,14 @@ static void drawRect(wPainter *painter, wRect rect)
 
 	platform->shaderBind(shader);
 
+	wMat4Multiply(&painter->state->projMat, &painter->state->viewMat, &painter->state->mvpMat);
+	// wMat4Multiply(&painter->state->viewMat, &painter->state->projMat, &painter->state->mvpMat);
+
 	platform->shaderSetValue(shader, painter->uniformMvp, W_SHADER_MAT4, &painter->state->mvpMat);
 	platform->shaderSetValue(shader, painter->uniformColor, W_SHADER_VEC4, &painter->state->color);
 
-	platform->draw(54, painter->vbo, painter->ibo);
+	// platform->draw(54, painter->vbo, painter->ibo);
+	platform->draw(6, painter->vbo, painter->ibo);
 }
 
 static void bindTexture(wPainter *painter, wNativeHandle tex, int index)
@@ -193,7 +197,6 @@ static int wPainterCheckSupported(wPlatformOps *p)
 wPainter *wPainterAlloc()
 {
 	wPainter *ret;
-	int err;
 
 	ret = wMemAlloc(sizeof(wPainter));
 	if (!ret)
@@ -371,11 +374,14 @@ void wPainterSetViewport(wPainter *painter, wRectI rect)
 	painter->platform->setViewport(rect.x, rect.y,  rect.w,  rect.h);
 
 	//  wMat4Ortho(&painter->state->projMat, rect.x, rect.x + rect.w, rect.y, rect.y + rect.h, -1, 1);
-	wMat4Ortho(&painter->state->mvpMat, rect.x, rect.x + rect.w, rect.y, rect.y + rect.h, -1, 1);
+	wMat4Ortho(&painter->state->projMat,
+		(float)rect.x,
+		(float)rect.x + rect.w,
+		(float)rect.y,
+		(float)rect.y + rect.h,
+		-1, 1);
 	// wMat4Transpose(&painter->state->mvpMat);
 	painter->state->dirty |= W_PAINTER_PROJ_MAT;
-
-	// wMat4Multiply(&painter->state->projMat, &painter->state->viewMat, &painter->state->mvpMat);
 }
 
 wRectI wPainterGetViewport(wPainter *painter)
@@ -388,15 +394,8 @@ void wPainterTranslate(wPainter *painter, float x, float y, float z)
 {
 	wAssert(painter != NULL);
 
-	wMat4 m;
-	wMat4Translate(&m, x, y, z);
-
-	wMat4 r;
-	wMat4Multiply(&r, &painter->state->viewMat, &r);
-	painter->state->viewMat = r;
+	wMat4Translate(&painter->state->viewMat, x, y, z);
 	painter->state->dirty |= W_PAINTER_VIEW_MAT;
-
-	wMat4Multiply(&painter->state->projMat, &painter->state->viewMat, &painter->state->mvpMat);
 }
 
 void wPainterPushState(wPainter *painter)
@@ -416,10 +415,12 @@ void wPainterPopState(wPainter *painter)
 	wPainterState *cur = painter->state;
 	wPainterState *old = painter->state - 1;
 
-	if (cur->dirty | W_PAINTER_VIEWPORT)
+	if (cur->dirty & W_PAINTER_VIEWPORT) {
 		painter->platform->setViewport(old->viewport.x, old->viewport.y, old->viewport.w,  old->viewport.h);
+		wLogDebug("Set viewport %d %d %d %d", old->viewport.x, old->viewport.y, old->viewport.w, old->viewport.h);
+	}
 
-	if (cur->dirty | W_PAINTER_SCISSOR)
+	if (cur->dirty & W_PAINTER_SCISSOR)
 		painter->platform->setScissor(old->scissor.x, old->scissor.y, old->scissor.w, old->scissor.h);
 
 	painter->state--;

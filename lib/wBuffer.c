@@ -72,7 +72,7 @@ int wBufferAppend(wBuffer *buf, size_t size, const void *data)
 	if (err)
 		return err;
 
-	memcpy(buf->data + buf->size, data, size);
+	memcpy(((char*)buf->data) + buf->size, data, size);
 	buf->size += size;
 
 	return W_SUCCESS;

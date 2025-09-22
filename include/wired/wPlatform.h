@@ -23,7 +23,7 @@ typedef struct _wPlatformOps
 
 	wNativeHandle (*shaderCreate)();
 	void (*shaderDestroy)(wNativeHandle shader);
-	int (*shaderCompile)(wNativeHandle shader, const wString *vert, const wString *frag);;
+	int (*shaderCompile)(wNativeHandle shader, const wString *vert, const wString *frag);
 	int (*shaderSetValue)(wNativeHandle shader, int location, int type, const void *data);
 	int (*shaderBind)(wNativeHandle shader);
 	int (*shaderGetUniformLocation)(wNativeHandle shader, const char *name);

@@ -1,5 +1,3 @@
-
-
 add_library(Wired SHARED
 	wArgs.c
 	wAssert.c

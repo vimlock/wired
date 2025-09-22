@@ -4,6 +4,10 @@
 
 struct _wImage
 {
+	void *data;
+	int width;
+	int height;
+	int format;
 };
 
 int wImageLoad(wImage *img, const wString *name, const wBuffer *data)

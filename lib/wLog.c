@@ -62,7 +62,13 @@ static void wLogWritePostfix()
 
 static const char *basename(const char *path)
 {
-	const char *lastslash = strrchr(path, '/');
+	#if __linux__ || __APPLE__
+		const char sep = '/';
+	#else
+		char sep = '\\';
+	#endif
+
+	const char *lastslash = strrchr(path, sep);
 	if (lastslash)
 		return lastslash + 1;
 	else
@@ -83,7 +89,12 @@ void wLog(int level, const char *file, int line, const char *fmt, ...)
 	file = basename(file);
 
 	timer = time(NULL);
-	localtime_r(&timer, &tm);
+
+#ifdef _WIN32
+	localtime_s(&tm, &timer);
+#else
+	localtime_s(&timer, &tm);
+#endif
 
 	char timestr[32];
 	strftime(timestr, sizeof(timestr), "%H:%M:%S", &tm);
