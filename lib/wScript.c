@@ -13,20 +13,6 @@ struct _wScript
 
 static lua_State *L = NULL;
 
-static const char *wlErrorStr(int luaError)
-{
-	switch (luaError) {
-		case LUA_OK: return "LUA_OK";
-		case LUA_YIELD:  return "LUA_YIELD";
-		case LUA_ERRRUN: return "LUA_ERRUN";
-		case LUA_ERRSYNTAX: return "LUA_ERRSYNTAX";
-		case LUA_ERRERR: return "LUA_ERRERR";
-		case LUA_ERRMEM: return "LUA_ERRMEM";
-	}
-
-	return "<invalid>";
-}
-
 void wlDumpStack()
 {
 	wLogInfo("==== lua stack ====");

@@ -172,6 +172,7 @@ wGuiNode *wGuiImage()
 
 	ret->type = W_GUI_IMAGE;
 	ret->paint = wGuiImage_paint;
+	ret->layout = wGuiImage_layout;
 
 	return ret;
 }

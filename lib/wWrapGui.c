@@ -177,6 +177,7 @@ static luaL_Reg wlGuiNode[] = {
 	{ "AddChild", wlGuiNodeAddChild },
 	{ "GetNumChildren", wlGuiNodeGetNumChildren },
 	{ "GetChild", wlGuiGetChild },
+	{ "GetChildren", wlGuiGetChildren },
 	{ "UpdateLayout", wlGuiUpdateLayout },
 
 	{ NULL, NULL }

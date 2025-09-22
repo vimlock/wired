@@ -103,6 +103,7 @@ static luaL_Reg wlSpriteAnim[] = {
 	{ "GetFrameCount", wlSpriteAnimGetFrameCount },
 	{ "SetFrameRect", wlSpriteAnimSetFrameRect },
 	{ "GetFrameRect", wlSpriteAnimGetFrameRect },
+	{ "AppendFrame", wlSpriteAnimAppendFrame },
 	{ "SetAction", wlSpriteAnimSetAction },
 	{ "GetAction", wlSpriteAnimGetAction },
 	{ "SetRecovery", wlSpriteAnimSetRecovery },

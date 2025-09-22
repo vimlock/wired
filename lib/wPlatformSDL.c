@@ -156,6 +156,7 @@ int wSdlInit(wPlatformOps *p)
 	p->windowDestroy = windowDestroy;
 	p->windowSetIcon = windowSetIcon;
 	p->windowSetFullscreen = windowSetFullscreen;
+	p->windowSetTitle = windowSetTitle;
 	p->windowMaximize = windowMaximize;
 	p->windowMinimize = windowMinimize;
 	p->windowGetGeometry = windowGetGeometry;

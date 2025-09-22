@@ -53,6 +53,7 @@ static luaL_Reg wlWindow[] = {
 	{ "Open",  wlWindowOpen },
 	{ "Close", wlWindowClose },
 	{ "SetTitle", wlWindowSetTitle },
+	{ "SetIcon", wlWindowSetIcon },
 	{ "SwapBuffers", wlWindowSwapBuffers },
 	{ NULL, NULL },
 };

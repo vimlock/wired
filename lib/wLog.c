@@ -52,14 +52,6 @@ static bool wLogIgnore(int level)
 	return level < wLogLevel;
 }
 
-static void wLogWritePostfix()
-{
-	if (!wLogFile)
-		return;
-
-	fprintf(wLogFile, "\n");
-}
-
 static const char *basename(const char *path)
 {
 	#if __linux__ || __APPLE__

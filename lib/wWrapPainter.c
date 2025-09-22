@@ -152,6 +152,7 @@ static int wlPainterSetScissor(lua_State *L)
 static luaL_Reg wlPainter[] = {
 
 	{ "__new",       wlPainter__new },
+	{ "__gc",        wlPainter__gc },
 	{ "DrawRect",    wlPainterDrawRect },
 	{ "DrawTexture", wlPainterDrawTexture },
 	{ "DrawImage",   wlPainterDrawImage },
