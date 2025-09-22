@@ -6,6 +6,7 @@ add_library(Wired SHARED
 	wFile.c
 	wGui.c
 	wImage.c
+	wImagePNG.c
 	wLog.c
 	wMath.c
 	wMemory.c
@@ -40,6 +41,7 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(Wired PUBLIC lua5.3)
 target_link_libraries(Wired PUBLIC SDL2::SDL2)
 target_link_libraries(Wired PUBLIC OpenGL::GL)
+target_link_libraries(Wired PUBLIC png)
 
 add_executable(WiredEngine
 	wMain.c

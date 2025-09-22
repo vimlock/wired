@@ -2,14 +2,51 @@
 #include "../include/wired/wError.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wPlatform.h"
+#include "../include/wired/wMemory.h"
+#include "../include/wired/wImage.h"
+#include "../include/wired/wLog.h"
+
+#include <string.h>
 
 struct _wTexture
 {
 	wNativeHandle handle;
 	wPlatformOps *platform;
+
+	int width;
+	int height;
+	int format;
 };
 
-int wTextureFromImage(wTexture *tex, const wImage *img)
+static void release(wTexture *tex)
+{
+	if (!tex->handle)
+		return;
+
+	tex->platform->textureDestroy(tex->handle);
+}
+
+wTexture *wTextureAlloc()
+{
+	wTexture *tex = wMemAlloc(sizeof(wTexture));
+	memset(tex, 0x0, sizeof(wTexture));
+
+	tex->handle = 0;
+	tex->platform = NULL;
+
+	return tex;
+}
+
+void wTextureFree(wTexture *tex)
+{
+	if (!tex)
+		return;
+
+	release(tex);
+	wMemFree(tex);
+}
+
+int wTextureLoadFromImage(wTexture *tex, const wImage *img)
 {
 	wAssert(tex != NULL);
 	wAssert(img != NULL);
@@ -19,8 +56,29 @@ int wTextureFromImage(wTexture *tex, const wImage *img)
 
 	wNativeHandle handle;
 
-	if (!wPlatform->textureCreate)
+	if (!wPlatform->textureCreate || !wPlatform->textureDestroy)
 		return W_NOT_SUPPORTED;
+
+	tex->platform = wPlatform;
+	tex->width = wImageWidth(img);
+	tex->height = wImageHeight(img);
+	tex->format = wImageFormat(img);
+	
+	wLogDebug("Creating texture %dx%d (fmt=%d)", tex->width, tex->height, tex->format);
+	tex->handle = wPlatform->textureCreate(
+		tex->width,
+		tex->height,
+		tex->format
+	);
+
+	wPlatform->textureData(
+		tex->handle,
+		tex->width,
+		tex->height,
+		wImageData((wImage*)img)
+	);
+
+	wLogDebug("Uploaded to GPU as texture %d", (int)tex->handle);
 
 	return W_SUCCESS;
 }
@@ -67,8 +125,6 @@ int wTextureSetWrap(wTexture *tex, int mode)
 wIVec2 wTextureGetSize(wTexture *tex)
 {
 	wAssert(tex != NULL);
-
-	// TODO
 
 	wIVec2 tmp = { 0, 0 };
 	return tmp;

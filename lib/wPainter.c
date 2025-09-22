@@ -1,5 +1,7 @@
 #include "../include/wired/wPainter.h"
 #include "../include/wired/wShader.h"
+#include "../include/wired/wImage.h"
+#include "../include/wired/wTexture.h"
 #include "../include/wired/wPlatform.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wMemory.h"
@@ -199,9 +201,6 @@ wPainter *wPainterAlloc()
 	wPainter *ret;
 
 	ret = wMemAlloc(sizeof(wPainter));
-	if (!ret)
-		return NULL;
-
 	memset(ret, 0x0, sizeof(wPainter));
 
 	return ret;
@@ -231,7 +230,7 @@ int wPainterInit(wPainter *painter)
 	painter->vbo = painter->platform->bufferCreate(sizeof(float) * 16 * 5, NULL);
 	painter->ibo = painter->platform->bufferCreate(sizeof(uint16_t) * 54, NULL);
 
-	painter->emptyTex = painter->platform->textureCreate();
+	painter->emptyTex = painter->platform->textureCreate(1, 1, W_IMAGE_RGBA8);
 
 	uint32_t emptyData[] = {
 		0xFFFFFFFF,

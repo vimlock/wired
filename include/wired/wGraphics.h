@@ -23,17 +23,6 @@ enum wShaderValueType
 	W_SHADER_MAT4,
 };
 
-enum wTextureFilter
-{
-	W_TEXTURE_NEAREST,
-	W_TEXTURE_BILINEAR,
-};
-
-enum wTextureWrap
-{
-	W_TEXTURE_CLAMP,
-	W_TEXTURE_REPEAT,
-};
 
 /* ---------- Window ---------- */
 int wWindowOpen(int width, int height);
@@ -59,24 +48,6 @@ void wScreenGetName(int screen, wString *ret);
 /* ---------- Cursor ---------- */
 void wCursorShow();
 void wCursorHide();
-
-/* ---------- Image ------------ */
-
-int wImageLoad(wImage *img, const wString *name, const wBuffer *data);
-int wImageSave(wImage *img, const wString *name, wBuffer *data);
-void wImageFill(wImage *img, int r, int g, int b, int a);
-int wImageCopy(const wImage *src, wImage *dst);
-int wImageCrop(const wImage *src, wImage *dst, wRectI rect);
-wTexture *wImageGetTexture(wImage *img);
-
-/* ---------- Texture ---------- */
-
-int wTextureFromImage(wTexture *tex, const wImage *img);
-int wTextureGenMipMaps(wTexture *tex);
-int wTextureSetFilter(wTexture *tex, int mode);
-int wTextureSetWrap(wTexture *tex, int mode);
-wNativeHandle wTextureGetNativeHandle(wTexture *tex);
-wIVec2 wTextureGetSize(wTexture *tex);
 
 /* ---------- SpriteSheet ---------- */
 

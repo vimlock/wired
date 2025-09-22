@@ -63,6 +63,23 @@ wRect wRectGrow(wRect rect, float amount)
 	return rect;
 }
 
+wRectI wRectIIntersect(wRectI a, wRectI b)
+{
+	int x1 = (a.x > b.x) ? a.x : b.x;
+	int y1 = (a.y > b.y) ? a.y : b.y;
+	int x2 = ((a.x + a.w) < (b.x + b.w)) ? (a.x + a.w) : (b.x + b.w);
+	int y2 = ((a.y + a.h) < (b.y + b.h)) ? (a.y + a.h) : (b.y + b.h);
+
+	wRectI res = { x1, y1, x2 - x1, y2 - y1 };
+
+	if (res.w < 0 || res.h < 0) {
+		wRectI empty = {0, 0, 0, 0};
+		return empty;
+	}
+
+	return res;
+}
+
 void wMat4Ortho(wMat4 *m, float l, float r, float t, float b, float n, float f)
 {
 	memset(m, 0x0, sizeof(wMat4));

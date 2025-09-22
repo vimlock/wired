@@ -2,6 +2,7 @@
 #include "../include/wired/wError.h"
 #include "../include/wired/wLog.h"
 #include "../include/wired/wAssert.h"
+#include "../include/wired/wTexture.h"
 
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -37,6 +38,11 @@ static PFNGLPROGRAMUNIFORM4FVPROC glProgramUniform4fv;
 
 static PFNGLCREATETEXTURESPROC glCreateTextures;
 // static PFNGLDELETETEXTURESPROC glDeleteTextures;
+static PFNGLGENERATETEXTUREMIPMAPPROC glGenerateTextureMipmap;
+static PFNGLTEXTUREPARAMETERIPROC glTextureParameteri;
+static PFNGLTEXTURESUBIMAGE2DPROC glTextureSubImage2D;
+static PFNGLBINDTEXTUREUNITPROC glBindTextureUnit;
+static PFNGLTEXTURESTORAGE2DPROC glTextureStorage2D;
 
 static PFNGLCREATEBUFFERSPROC glCreateBuffers;
 static PFNGLDELETEBUFFERSPROC glDeleteBuffers;
@@ -95,6 +101,11 @@ static int loadProcs(wPlatformOps *p)
 
 
 	PROC(glCreateTextures);
+	PROC(glGenerateTextureMipmap);
+	PROC(glTextureParameteri);
+	PROC(glTextureSubImage2D);
+	PROC(glBindTextureUnit);
+	PROC(glTextureStorage2D);
 
 	PROC(glCreateBuffers);
 	PROC(glDeleteBuffers);
@@ -247,10 +258,11 @@ static int shaderBind(wNativeHandle shader)
 	return W_SUCCESS;
 }
 
-static wNativeHandle textureCreate()
+static wNativeHandle textureCreate(int w, int h, int fmt)
 {
 	GLuint id = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &id);
+	glTextureStorage2D(id, 1, GL_RGBA8, w, h);
 	CHECK_ERROR();
 	return id;
 }
@@ -264,7 +276,9 @@ static void textureDestroy(wNativeHandle tex)
 
 static int textureGenMipMaps(wNativeHandle tex)
 {
-	return W_NOT_IMPLEMENTED;
+	glGenerateTextureMipmap(tex);
+	CHECK_ERROR();
+	return W_SUCCESS;
 }
 
 static int textureSetFilter(wNativeHandle tex, int mode)
@@ -272,7 +286,13 @@ static int textureSetFilter(wNativeHandle tex, int mode)
 	if (mode != W_TEXTURE_NEAREST && mode != W_TEXTURE_BILINEAR)
 		return W_NOT_SUPPORTED;
 
-	return W_NOT_IMPLEMENTED;
+	GLenum e = (mode == W_TEXTURE_NEAREST) ? GL_NEAREST : GL_LINEAR;
+	glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, e);
+	glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, e);
+
+	CHECK_ERROR();
+
+	return W_SUCCESS;
 }
 
 static int textureSetWrap(wNativeHandle tex, int mode)
@@ -280,17 +300,28 @@ static int textureSetWrap(wNativeHandle tex, int mode)
 	if (mode != W_TEXTURE_REPEAT && mode != W_TEXTURE_CLAMP)
 		return W_NOT_SUPPORTED;
 
-	return W_NOT_IMPLEMENTED;
+	GLenum e = (mode == W_TEXTURE_REPEAT) ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+
+	glTextureParameteri(tex, GL_TEXTURE_WRAP_S, e);
+	glTextureParameteri(tex, GL_TEXTURE_WRAP_T, e);
+
+	CHECK_ERROR();
+
+	return W_SUCCESS;
 }
 
 static int textureBind(wNativeHandle tex, int index)
 {
-	return W_NOT_IMPLEMENTED;
+	glBindTextureUnit(index, tex);
+	CHECK_ERROR();
+	return W_SUCCESS;
 }
 
 static int textureData(wNativeHandle tex, int w, int h, const void *data)
 {
-	return W_NOT_IMPLEMENTED;
+	glTextureSubImage2D(tex, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	CHECK_ERROR();
+	return W_SUCCESS;
 }
 
 static wNativeHandle bufferCreate(size_t size, const void *data)

@@ -148,6 +148,7 @@ static int wlInitLibs()
 	wlRegisterTexture(L);
 	wlRegisterBuffer(L);
 	wlRegisterPainter(L);
+	wlRegisterImage(L);
 	wlRegisterLog(L);
 	wlRegisterWindow(L);
 	wlRegisterGui(L);

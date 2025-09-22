@@ -63,6 +63,7 @@ wRect wRectNormalize(wRect rect);
 wRect wRectShrink(wRect rect, float amount);
 wRect wRectGrow(wRect rect, float amount);
 
+wRectI wRectIIntersect(wRectI a, wRectI b);
 wRectI wRectIShrink(wRectI rect, int amount);
 wRectI wRectIGrow(wRectI rect, int amount);
 

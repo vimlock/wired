@@ -28,7 +28,7 @@ typedef struct _wPlatformOps
 	int (*shaderBind)(wNativeHandle shader);
 	int (*shaderGetUniformLocation)(wNativeHandle shader, const char *name);
 
-	wNativeHandle (*textureCreate)();
+	wNativeHandle (*textureCreate)(int w, int h, int fmt);
 	void (*textureDestroy)(wNativeHandle tex);
 	int (*textureGenMipMaps)(wNativeHandle tex);
 	int (*textureSetFilter)(wNativeHandle tex, int mode);
