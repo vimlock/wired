@@ -4,6 +4,8 @@
 
 void *wlCheckClass(lua_State *L, int index, const char *name)
 {
+	wAssert(L != NULL);
+
 	if (!lua_isuserdata(L, index))
 		luaL_error(L, "Expecting %s", name);
 
@@ -31,6 +33,10 @@ void *wlCheckClass(lua_State *L, int index, const char *name)
 
 void wlPushClass(lua_State *L, void *obj, const char *cls)
 {
+	wAssert(L != NULL);
+	wAssert(cls != NULL);
+	wAssert(obj != NULL);
+
 	int res;
 
 	void **self = lua_newuserdata(L, sizeof(void*));
@@ -209,6 +215,13 @@ static int wlGuiVBox__new(lua_State *L)
 	return 1;
 }
 
+static int wlGuiCanvas__new(lua_State *L)
+{
+	wGuiNode *node = wGuiCanvas();
+	wlPushGuiNode(L, node);
+	return 1;
+}
+
 static luaL_Reg wlGuiNode[] = {
 
 	{ "SetVisible", wlGuiNodeSetVisible },
@@ -255,9 +268,16 @@ static luaL_Reg wlGuiHBox[] = {
 	{ NULL, NULL }
 };
 
+static luaL_Reg wlGuiCanvas[] = {
+	{ "__new", wlGuiCanvas__new },
+	{ NULL, NULL }
+};
+
 void wlRegisterGui(lua_State *L)
 {
 	wlRegisterType(L, "GuiNode", wlGuiNode);
-	wlRegisterDerivedType(L, "GuiVBox", "GuiNode", wlGuiVBox);
+	wlRegisterDerivedType(L, "GuiVBox",   "GuiNode", wlGuiVBox);
 	wlRegisterDerivedType(L, "GuiButton", "GuiNode", wlGuiButton);
+	wlRegisterDerivedType(L, "GuiCanvas", "GuiNode", wlGuiCanvas);
+	wlRegisterDerivedType(L, "GuiLabel",  "GuiNode", wlGuiLabel);
 }

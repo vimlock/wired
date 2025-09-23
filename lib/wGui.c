@@ -81,10 +81,7 @@ void wGuiNodePaint(wGuiNode *node, wPainter *painter)
 	if (!node->paint)
 		return;
 
-	wPainterPushState(painter);
-	// wPainterTranslate(painter, node->rect.x, node->rect.y, 0.0f);
 	node->paint(node, painter);
-	wPainterPopState(painter);
 }
 
 void wGuiNodeUpdateLayout(wGuiNode *node)
@@ -154,6 +151,51 @@ wVec2 wGuiNodeGetSize(wGuiNode *node)
 {
 	wAssert(node != NULL);
 	wVec2 ret = { node->rect.w, node->rect.h };
+	return ret;
+}
+
+/* --------- Canvas --------- */
+
+static const wClass wGuiCanvasClass = {
+	.name = "GuiCanvas",
+	.base = &wGuiNodeClass,
+	.version = 1,
+};
+
+static void wGuiCanvas_paint(wGuiNode *self, wPainter *painter)
+{
+	wAssert(self != NULL);
+	wAssert(painter != NULL);
+
+	wGuiNodeUpdateLayout(self);
+
+	wRectI viewport = { 0, 0, self->rect.w, self->rect.h };
+	wPainterSetViewport(painter, viewport);
+
+	wGuiNode_paint(self, painter);
+}
+
+static void wGuiCanvas_layout(wGuiNode *self)
+{
+	wAssert(self != NULL);
+
+	wVec2 size = { wWindowGetWidth(), wWindowGetHeight() };
+	wGuiNodeSetSize(self, size);
+
+	wRect rect = wGuiNodeGetGeometry(self);
+	for (int i = 0; i < wGuiNodeGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiNodeGetChild(self, i);
+		wGuiNodeSetGeometry(child, rect);
+	}
+}
+
+wGuiNode *wGuiCanvas()
+{
+	wGuiNode *ret = wGuiNodeAlloc(0);
+	ret->class = &wGuiCanvasClass;
+	ret->paint = wGuiCanvas_paint;
+	ret->layout = wGuiCanvas_layout;
+
 	return ret;
 }
 

@@ -3,6 +3,10 @@
 #include "wMath.h"
 #include "wGraphics.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -61,6 +65,8 @@ wRect wGuiNodeGetGeometry(wGuiNode *node);
 void wGuiNodeSetVisible(wGuiNode *node, bool visible);
 bool wGuiNodeIsVisible(wGuiNode *node);
 
+wGuiNode *wGuiCanvas();
+
 wGuiNode *wGuiImage();
 int wGuiImageSetImage(wGuiNode *node, wImage *img);
 
@@ -88,3 +94,7 @@ wGuiNode *wGuiScript();
 void wClipboardSetText(const wString *str);
 void wClipboardGetText(wString *buf);
 void wClipboardGetImage(wImage *img);
+
+#ifdef __cplusplus
+}
+#endif

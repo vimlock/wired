@@ -35,17 +35,14 @@ void main()
 shader:Compile()
 
 painter = Painter()
-painter:SetViewport(0, 0, 800, 600)
 painter:SetShader(shader)
 
 img = Image()
 img:Load("test.png")
 
-tex = Texture()
-tex:LoadFromImage(img)
+canvas = GuiCanvas()
 
-vbox = GuiVBox()
-vbox:SetSize(800, 600)
+vbox = canvas:AddChild(GuiVBox())
 
 btn1 = vbox:AddChild(GuiButton())
 btn2 = vbox:AddChild(GuiButton())
@@ -57,10 +54,8 @@ btn2:SetImage(img)
 btn3:SetImage(img)
 btn4:SetImage(img)
 
-vbox:UpdateLayout()
-
 function update()
 	painter:Clear(Color(0.1, 0.1, 0.1, 1))
 	painter:SetColor(Color(1, 1, 1, 1))
-	vbox:Paint(painter)
+	canvas:Paint(painter)
 end
