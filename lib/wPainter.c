@@ -1,4 +1,5 @@
 #include "../include/wired/wPainter.h"
+#include "../include/wired/wClass.h"
 #include "../include/wired/wShader.h"
 #include "../include/wired/wImage.h"
 #include "../include/wired/wTexture.h"
@@ -36,8 +37,16 @@ typedef struct _wPainterState
 	unsigned dirty;
 } wPainterState;
 
+static wClass wPainterClass =
+{
+	.name = "Painter",
+	.base = NULL,
+	.version = 1,
+};
+
 struct _wPainter
 {
+	const wClass *class;
 	wPainterState *state;
 	wPainterState *stack;
 	wPlatformOps *platform;
@@ -202,6 +211,8 @@ wPainter *wPainterAlloc()
 
 	ret = wMemAlloc(sizeof(wPainter));
 	memset(ret, 0x0, sizeof(wPainter));
+
+	ret->class = &wPainterClass;
 
 	return ret;
 }

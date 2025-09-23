@@ -8,10 +8,15 @@
 #include "wShader.h"
 #include "wGui.h"
 
-#include <lua5.3/lua.h>
-#include <lua5.3/lualib.h>
-#include <lua5.3/lauxlib.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+#include <lua5.4/lua.h>
+#include <lua5.4/lualib.h>
+#include <lua5.4/lauxlib.h>
+
+typedef struct _wClass wClass;
 
 void wlPushVec2(lua_State *L, wVec2 vec);
 wVec2 *wlCheckVec2(lua_State *L, int index);
@@ -54,10 +59,12 @@ void wlPushSpriteAnim(lua_State *L, wSpriteAnim *anim);
 void wlDumpStack();
 
 void wlRegisterFunc(lua_State *L, const char *name, lua_CFunction func);
-void wlRegisterType(lua_State *L, const char *name, luaL_Reg *reg);
+void wlRegisterType(lua_State *L, const char *name, const luaL_Reg *reg);
+void wlRegisterDerivedType(lua_State *L, const char *name, const char *base, const luaL_Reg *reg);
 
 void wlRegisterFile(lua_State *L);
 void wlRegisterGui(lua_State *L);
+void wlRegisterGuiButton(lua_State *L);
 void wlRegisterImage(lua_State *L);
 void wlRegisterLog(lua_State *L);
 void wlRegisterMath(lua_State *L);
@@ -68,3 +75,9 @@ void wlRegisterTexture(lua_State *L);
 void wlRegisterWindow(lua_State *L);
 
 int wlCheckMethod(lua_State *L);
+void *wlCheckClass(lua_State *L, int index, const char *name);
+void wlPushClass(lua_State *L, void *obj, const char *cls);
+
+#ifdef __cplusplus
+}
+#endif

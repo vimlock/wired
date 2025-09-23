@@ -85,7 +85,7 @@ void wLog(int level, const char *file, int line, const char *fmt, ...)
 #ifdef _WIN32
 	localtime_s(&tm, &timer);
 #else
-	localtime_s(&timer, &tm);
+	localtime_r(&timer, &tm);
 #endif
 
 	char timestr[32];

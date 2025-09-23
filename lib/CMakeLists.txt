@@ -38,7 +38,7 @@ add_library(Wired SHARED
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 
-target_link_libraries(Wired PUBLIC lua5.3)
+target_link_libraries(Wired PUBLIC lua5.4)
 target_link_libraries(Wired PUBLIC SDL2::SDL2)
 target_link_libraries(Wired PUBLIC OpenGL::GL)
 target_link_libraries(Wired PUBLIC png)

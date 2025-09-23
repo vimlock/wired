@@ -1,4 +1,5 @@
 #include "../include/wired/wImage.h"
+#include "../include/wired/wClass.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wMemory.h"
@@ -7,6 +8,13 @@
 #include <string.h>
 
 int wImagePNGLoad(wImage *img, const wString *path);
+
+static wClass wImageClass =
+{
+	.name = "Image",
+	.base = NULL,
+	.version = 1
+};
 
 struct _wImage
 {

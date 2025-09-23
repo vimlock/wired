@@ -1,6 +1,5 @@
 #pragma once
 
-#include "wBuffer.h"
 #include "wMath.h"
 #include "wString.h"
 

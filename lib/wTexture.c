@@ -1,4 +1,5 @@
 #include "../include/wired/wGraphics.h"
+#include "../include/wired/wClass.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wPlatform.h"
@@ -8,8 +9,16 @@
 
 #include <string.h>
 
+static wClass wTextureClass =
+{
+	.name = "Texture",
+	.base = NULL,
+	.version = 1
+};
+
 struct _wTexture
 {
+	const wClass *class;
 	wNativeHandle handle;
 	wPlatformOps *platform;
 
@@ -24,6 +33,7 @@ static void release(wTexture *tex)
 		return;
 
 	tex->platform->textureDestroy(tex->handle);
+	tex->handle = 0;
 }
 
 wTexture *wTextureAlloc()
@@ -31,6 +41,7 @@ wTexture *wTextureAlloc()
 	wTexture *tex = wMemAlloc(sizeof(wTexture));
 	memset(tex, 0x0, sizeof(wTexture));
 
+	tex->class = &wTextureClass;
 	tex->handle = 0;
 	tex->platform = NULL;
 
@@ -52,6 +63,9 @@ int wTextureLoadFromImage(wTexture *tex, const wImage *img)
 	wAssert(img != NULL);
 
 	if (!tex || !img)
+		return W_INVALID_ARGUMENT;
+
+	if (wImageWidth(img) < 1 || wImageHeight(img) < 1)
 		return W_INVALID_ARGUMENT;
 
 	wNativeHandle handle;

@@ -39,31 +39,28 @@ painter:SetViewport(0, 0, 800, 600)
 painter:SetShader(shader)
 
 img = Image()
-img:Load("../../../../test.png")
+img:Load("test.png")
 
 tex = Texture()
 tex:LoadFromImage(img)
 
 vbox = GuiVBox()
 vbox:SetSize(800, 600)
-btn1 = vbox:AddChild(GuiButton({
-	image=img
-}))
-btn2 = vbox:AddChild(GuiButton({
-	image=img
-}))
-btn3 = vbox:AddChild(GuiButton({
-	image=img
-}))
-btn4 = vbox:AddChild(GuiButton({
-	image=img
-}))
+
+btn1 = vbox:AddChild(GuiButton())
+btn2 = vbox:AddChild(GuiButton())
+btn3 = vbox:AddChild(GuiButton())
+btn4 = vbox:AddChild(GuiButton())
+
+btn1:SetImage(img)
+btn2:SetImage(img)
+btn3:SetImage(img)
+btn4:SetImage(img)
 
 vbox:UpdateLayout()
 
 function update()
 	painter:Clear(Color(0.1, 0.1, 0.1, 1))
 	painter:SetColor(Color(1, 1, 1, 1))
-	-- vbox:Paint(painter)
-	painter:DrawTexture(Rect(0, 0,1344/2, 896/2), tex)
+	vbox:Paint(painter)
 end

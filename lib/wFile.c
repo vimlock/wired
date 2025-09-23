@@ -109,7 +109,11 @@ static size_t wFile_size(void *opaque)
 
 	struct stat st;
 
+#if __linux__
+	fd = fileno(opaque);
+#else
 	fd = _fileno(opaque);
+#endif
 	err = fstat(fd, &st);
 	if (err)
 		return 0;

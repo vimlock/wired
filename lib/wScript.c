@@ -80,14 +80,11 @@ void wlRegisterFunc(lua_State *L, const char *name, lua_CFunction func)
 	lua_setglobal(L, name);
 }
 
-void wlRegisterType(lua_State *L, const char *name, luaL_Reg *reg)
+static void wlRegisterMethods(lua_State *L, const char *name, const luaL_Reg *reg)
 {
-	int oldTop = lua_gettop(L);
-	luaL_Reg *newf = NULL;
+	const luaL_Reg *newf = NULL;
 
 	bool hasIndex = false;
-
-	luaL_newmetatable(L, name);
 
 	for (; reg->name; reg++) {
 
@@ -108,14 +105,32 @@ void wlRegisterType(lua_State *L, const char *name, luaL_Reg *reg)
 		lua_setfield(L, -1, "__index");
 	}
 
-	lua_pop(L, 1);
-
 	if (newf) {
 		lua_pushcfunction(L, newf->func);
 		lua_setglobal(L, name);
 	}
+}
 
-	wAssert(lua_gettop(L) == oldTop);
+void wlRegisterType(lua_State *L, const char *name, const luaL_Reg *reg)
+{
+	luaL_newmetatable(L, name);
+	wlRegisterMethods(L, name, reg);
+	lua_pop(L, 1);
+}
+
+void wlRegisterDerivedType(lua_State *L, const char *name, const char* base, const luaL_Reg *reg)
+{
+	wlRegisterType(L, name, reg);
+
+	luaL_getmetatable(L, name);
+
+	lua_newtable(L);
+	luaL_getmetatable(L, base);
+	lua_setfield(L, -2, "__index");
+	
+	lua_setmetatable(L, -2);
+
+	lua_pop(L, 1);
 }
 
 int wlCheckMethod(lua_State *L)

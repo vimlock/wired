@@ -1,4 +1,5 @@
 #include "../include/wired/wShader.h"
+#include "../include/wired/wClass.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wPlatform.h"
@@ -6,8 +7,16 @@
 
 #include <string.h>
 
+static const wClass wShaderClass =
+{
+	.name = "Shader",
+	.base = NULL,
+	.version = 1
+};
+
 struct _wShader
 {
+	const wClass *class;
 	wNativeHandle handle;
 	wPlatformOps *platform;
 
@@ -23,6 +32,7 @@ wShader *wShaderAlloc()
 
 	ret = wMemAlloc(sizeof(wShader));
 	memset(ret, 0x0, sizeof(wShader));
+	ret->class = &wShaderClass;
 
 	return ret;
 }

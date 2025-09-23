@@ -1,13 +1,20 @@
 #include "../include/wired/wGui.h"
+#include "../include/wired/wClass.h"
 #include "../include/wired/wTexture.h"
 #include "../include/wired/wGraphics.h"
 #include "../include/wired/wPainter.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wMemory.h"
-#include "../include/wired/wError.h"
 #include "../include/wired/wLog.h"
 
 #include <string.h>
+
+static const wClass wGuiNodeClass = 
+{
+	.name = "GuiNode",
+	.base = NULL,
+	.version = 1,
+};
 
 static void wGuiNode_paint(wGuiNode *self, wPainter *painter)
 {
@@ -17,13 +24,17 @@ static void wGuiNode_paint(wGuiNode *self, wPainter *painter)
 		wGuiNodePaint(wGuiNodeGetChild(self, i), painter);
 }
 
-wGuiNode *wGuiNodeAlloc()
+wGuiNode *wGuiNodeAlloc(int privSize)
 {
 	wGuiNode *ret;
 
-	ret = wMemAlloc(sizeof(wGuiNode));
-	memset(ret, 0x0, sizeof(wGuiNode));
+	ret = wMemAlloc(sizeof(wGuiNode) + privSize);
+	memset(ret, 0x0, sizeof(wGuiNode) + privSize);
+	ret->class = &wGuiNodeClass;
+	ret->numChildren = 0;
 	ret->visible = true;
+	ret->paint = wGuiNode_paint;
+	ret->priv = (ret + 1);
 	return ret;
 }
 
@@ -32,7 +43,12 @@ void wGuiNodeFree(wGuiNode *node)
 	if (!node)
 		return;
 
-	wGuiWidgetFree(node->widget);
+	if (node->free)
+		node->free(node);
+
+	wMemFree(node->children);
+	node->numChildren = 0;
+
 	wMemFree(node);
 }
 
@@ -62,12 +78,12 @@ void wGuiNodePaint(wGuiNode *node, wPainter *painter)
 	if (!node->visible)
 		return;
 
-	if (!node->widget || !node->widget->paint)
+	if (!node->paint)
 		return;
 
 	wPainterPushState(painter);
 	// wPainterTranslate(painter, node->rect.x, node->rect.y, 0.0f);
-	node->widget->paint(node->widget, painter);
+	node->paint(node, painter);
 	wPainterPopState(painter);
 }
 
@@ -76,10 +92,8 @@ void wGuiNodeUpdateLayout(wGuiNode *node)
 	if (!node->visible)
 		return;
 
-	if (!node->widget || !node->widget->layout)
-		return;
-
-	node->widget->layout(node->widget);
+	if (node->layout)
+		node->layout(node);
 
 	for (int i = 0; i < wGuiNodeGetNumChildren(node); ++i) {
 		wGuiNode *child = wGuiNodeGetChild(node, i);
@@ -143,58 +157,42 @@ wVec2 wGuiNodeGetSize(wGuiNode *node)
 	return ret;
 }
 
-wGuiWidget *wGuiWidgetAlloc(int privSize)
-{
-	wGuiWidget *ret;
-
-	ret = wMemAlloc(sizeof(wGuiWidget) + privSize);
-	memset(ret, 0x0, sizeof(wGuiWidget) + privSize);
-	ret->priv = (char*)ret + sizeof(wGuiWidget);
-
-	return ret;
-}
-
-void wGuiWidgetFree(wGuiWidget *widget)
-{
-	if (!widget)
-		return;
-
-	if (widget->free)
-		widget->free(widget);
-
-	wMemFree(widget);
-}
-
 /* --------- Image --------- */
+
+static const wClass wGuiImageClass =
+{
+	.name = "GuiImage",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
 
 typedef struct _wGuiImagePriv
 {
-	wGuiWidget base;
 	wImage *image;
 } wGuiImagePriv;
 
-static void wGuiImage_paint(wGuiWidget *self, wPainter *painter)
+static void wGuiImage_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
 	wGuiImagePriv *priv = self->priv;
-	wPainterDrawImage(painter, wGuiNodeGetGeometry(self->node), priv->image);
-	wGuiNode_paint(self->node, painter);
+	wPainterDrawImage(painter, wGuiNodeGetGeometry(self), priv->image);
+	wGuiNode_paint(self, painter);
 }
 
-static void wGuiImage_layout(wGuiWidget *self)
+static void wGuiImage_layout(wGuiNode *self)
 {
-	wRect rect = wGuiNodeGetGeometry(self->node);
+	wRect rect = wGuiNodeGetGeometry(self);
 
-	for (int i = 0; i < wGuiNodeGetNumChildren(self->node); ++i) {
-		wGuiNode *child = wGuiNodeGetChild(self->node, i);
+	for (int i = 0; i < wGuiNodeGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiNodeGetChild(self, i);
 		wGuiNodeSetGeometry(child, rect);
 	}
 }
 
-wGuiWidget *wGuiImage()
+wGuiNode *wGuiImage()
 {
-	wGuiWidget *ret = wGuiWidgetAlloc(sizeof(wGuiImagePriv));
-	ret->type = W_GUI_IMAGE;
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiImagePriv));
+	ret->class = &wGuiImageClass;
 	ret->paint = wGuiImage_paint;
 	ret->layout = wGuiImage_layout;
 
@@ -203,54 +201,63 @@ wGuiWidget *wGuiImage()
 
 /* --------- Button --------- */
 
+static const wClass wGuiButtonClass =
+{
+	.name = "GuiButton",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
+
 typedef struct _wGuiButtonPriv
 {
-	wGuiWidget base;
 	bool disabled;
 	wTexture *texture;
 	wImage *image;
 } wGuiButtonPriv;
 
-static void wGuiButton_paint(wGuiWidget *self, wPainter *painter)
+static void wGuiButton_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
 
 	wGuiButtonPriv *priv = self->priv;
 
-	wRect rect = wGuiNodeGetGeometry(self->node);
+	wRect rect = wGuiNodeGetGeometry(self);
+
+	wPainterDrawRect(painter, rect);
 
 	if (priv->image)
 		wPainterDrawTexture(painter, rect, priv->texture);
 	else
 		wPainterDrawRect(painter, rect);
-	wGuiNode_paint(self->node, painter);
+
+	wGuiNode_paint(self, painter);
 }
 
-static void wGuiButton_layout(wGuiWidget *self)
+static void wGuiButton_layout(wGuiNode *self)
 {
-	wRect rect = wGuiNodeGetGeometry(self->node);
+	wRect rect = wGuiNodeGetGeometry(self);
 
-	for (int i = 0; i < wGuiNodeGetNumChildren(self->node); ++i) {
-		wGuiNode *child = wGuiNodeGetChild(self->node, i);
+	for (int i = 0; i < wGuiNodeGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiNodeGetChild(self, i);
 		wGuiNodeSetGeometry(child, rect);
 	}
 }
 
-static void wGuiButton_mouseEvent(wGuiWidget *self)
+static void wGuiButton_mouseEvent(wGuiNode *self)
 {
 	wAssert(self != NULL);
 	wLogInfo("Button clicked");
 }
 
-static void wGuiButton_keyboardEvent(wGuiWidget *self)
+static void wGuiButton_keyboardEvent(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-wGuiWidget *wGuiButton()
+wGuiNode *wGuiButton()
 {
-	wGuiWidget *ret = wGuiWidgetAlloc(sizeof(wGuiButtonPriv));
-	ret->type = W_GUI_BUTTON;
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiButtonPriv));
+	ret->class = &wGuiButtonClass;
 	ret->paint = wGuiButton_paint;
 	ret->layout = wGuiButton_layout;
 	ret->mouseEvent = wGuiButton_mouseEvent;
@@ -262,40 +269,45 @@ wGuiWidget *wGuiButton()
 	return ret;
 }
 
-void wGuiButtonSetImage(wGuiWidget *widget, wImage *img)
+void wGuiButtonSetImage(wGuiNode *node, wImage *img)
 {
-	wAssert(widget != NULL);
-	wAssert(widget->type == W_GUI_BUTTON);
+	wAssert(node != NULL);
 
-	wGuiButtonPriv *priv = widget->priv;
+	wGuiButtonPriv *priv = node->priv;
 	priv->image = img;
 	wTextureLoadFromImage(priv->texture, img);
 }
 
 /* --------- Label --------- */
 
+static const wClass wGuiLabelClass =
+{
+	.name = "GuiLabel",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
+
 typedef struct _wGuiLabelPriv
 {
-	wGuiWidget base;
 	wString text;
 } wGuiLabelPriv;
 
-static void wGuiLabel_paint(wGuiWidget *self, wPainter *painter)
+static void wGuiLabel_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
 }
 
-static void wGuiLabel_free(wGuiWidget *self)
+static void wGuiLabel_free(wGuiNode *self)
 {
 	wAssert(self != NULL);
 	wGuiLabelPriv *priv = self->priv;
 	wStringFree(&priv->text);
 }
 
-wGuiWidget *wGuiLabel()
+wGuiNode *wGuiLabel()
 {
-	wGuiWidget *ret = wGuiWidgetAlloc(sizeof(wGuiLabelPriv));
-	ret->type = W_GUI_LABEL;
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiLabelPriv));
+	ret->class = &wGuiLabelClass;
 	ret->free = wGuiLabel_free;
 	ret->paint = wGuiLabel_paint;
 	return ret;
@@ -303,25 +315,31 @@ wGuiWidget *wGuiLabel()
 
 /* --------- Slider --------- */
 
+static const wClass wGuiSliderClass =
+{
+	.name = "GuiSlider",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
+
 typedef struct _wGuiSliderPriv
 {
-	wGuiWidget base;
 	int min;
 	int max;
 } wGuiSliderPriv;
 
-static void wGuiSlider_free(wGuiWidget *self)
+static void wGuiSlider_free(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-static void wGuiSlider_paint(wGuiWidget *self, wPainter *painter)
+static void wGuiSlider_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
 	wAssert(painter != NULL);
 
 	wGuiStyle *style = self->style;
-	wRect rect = wGuiNodeGetGeometry(self->node);
+	wRect rect = wGuiNodeGetGeometry(self);
 
 	wRect handle = { 0, 0, style->sliderHandleSize, rect.h};
 	wRect gutter = { 0, 0, rect.w, style->sliderGutterSize };
@@ -330,20 +348,20 @@ static void wGuiSlider_paint(wGuiWidget *self, wPainter *painter)
 	wPainterDrawRect(painter, handle);
 }
 
-static void wGuiSlider_mouseEvent(wGuiWidget *self)
+static void wGuiSlider_mouseEvent(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-static void wGuiSlider_keyboardEvent(wGuiWidget *self)
+static void wGuiSlider_keyboardEvent(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-wGuiWidget *wGuiSlider()
+wGuiNode *wGuiSlider()
 {
-	wGuiWidget *ret = wGuiWidgetAlloc(sizeof(wGuiSliderPriv));
-	ret->type = W_GUI_SLIDER;
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiSliderPriv));
+	ret->class = &wGuiSliderClass;
 	ret->paint = wGuiSlider_paint;
 	ret->free = wGuiSlider_free;
 	ret->mouseEvent = wGuiSlider_mouseEvent;
@@ -354,35 +372,41 @@ wGuiWidget *wGuiSlider()
 
 /* --------- ScrollArea --------- */
 
+static const wClass wGuiScrollAreaClass =
+{
+	.name = "GuiScrollAreaClass",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
+
 struct _wGuiScrollPriv
 {
-	wGuiWidget base;
 	bool scrollX;
 	bool scrollY;
 } wGuiScrollPriv;
 
-static void wGuiScrollArea_free(wGuiWidget *self)
+static void wGuiScrollArea_free(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-static void wGuiScrollArea_paint(wGuiWidget *self, wPainter *painter)
+static void wGuiScrollArea_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
 }
 
-static void wGuiScrollArea_mouseEvent(wGuiWidget *self)
+static void wGuiScrollArea_mouseEvent(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-wGuiWidget *wGuiScrollArea()
+wGuiNode *wGuiScrollArea()
 {
-	wGuiWidget *ret = wGuiWidgetAlloc(sizeof(wGuiScrollPriv));
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiScrollPriv));
 	if (!ret)
 		return NULL;
 
-	ret->type = W_GUI_SCROLL;
+	ret->class = &wGuiScrollAreaClass;
 	ret->paint = wGuiScrollArea_paint;
 	ret->mouseEvent = wGuiScrollArea_mouseEvent;
 	ret->free = wGuiScrollArea_free;
@@ -392,37 +416,44 @@ wGuiWidget *wGuiScrollArea()
 
 /* --------- VBox --------- */
 
-static void wGuiVBox_layout(wGuiWidget *self)
+static const wClass wGuiVBoxClass =
+{
+	.name = "GuiVBox",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
+
+static void wGuiVBox_layout(wGuiNode *self)
 {
 	wAssert(self != NULL);
 
-	wRect rect = wGuiNodeGetGeometry(self->node);
+	wRect rect = wGuiNodeGetGeometry(self);
 	float hsize = rect.h;
 
 	float minsize = 0.0f;
 
-	for (int i = 0; i < wGuiNodeGetNumChildren(self->node); ++i) {
-		wGuiNode *child = wGuiNodeGetChild(self->node, i);
+	for (int i = 0; i < wGuiNodeGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiNodeGetChild(self, i);
 		minsize += child->minSize.y;
 	}
 
-	float h = (hsize - minsize) / wGuiNodeGetNumChildren(self->node);
+	float h = (hsize - minsize) / wGuiNodeGetNumChildren(self);
 	float y = 0.0f;
 
-	for (int i = 0; i < wGuiNodeGetNumChildren(self->node); ++i) {
-		wGuiNode *child = wGuiNodeGetChild(self->node, i);
+	for (int i = 0; i < wGuiNodeGetNumChildren(self); ++i) {
+		wGuiNode *child = wGuiNodeGetChild(self, i);
 		wRect crect = { 0, y, rect.w, h };
 		wGuiNodeSetGeometry(child, crect);
 		y += crect.h;
 	}
 }
 
-wGuiWidget *wGuiVBox()
+wGuiNode *wGuiVBox()
 {
-	wGuiWidget *ret;
+	wGuiNode *ret;
 
-	ret = wGuiWidgetAlloc(0);
-	ret->type = W_GUI_VBOX;
+	ret = wGuiNodeAlloc(0);
+	ret->class = &wGuiVBoxClass;
 	ret->layout = wGuiVBox_layout;
 
 	return ret;
@@ -430,17 +461,24 @@ wGuiWidget *wGuiVBox()
 
 /* --------- HBox --------- */
 
-static void wGuiHBox_layout(wGuiWidget *self)
+static const wClass wGuiHBoxClass =
+{
+	.name = "GuiHBox",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
+
+static void wGuiHBox_layout(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-wGuiWidget *wGuiHBox()
+wGuiNode *wGuiHBox()
 {
-	wGuiWidget *ret;
+	wGuiNode *ret;
 
-	ret = wGuiWidgetAlloc(0);
-	ret->type = W_GUI_HBOX;
+	ret = wGuiNodeAlloc(0);
+	ret->class = &wGuiHBoxClass;
 	ret->layout = wGuiHBox_layout;
 
 	return ret;
@@ -448,23 +486,29 @@ wGuiWidget *wGuiHBox()
 
 /* --------- Grid --------- */
 
+static const wClass wGuiGridClass =
+{
+	.name = "GuiGrid",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
+
 struct _wGuiGridPriv
 {
-	wGuiWidget base;
 	int cols;
 } wGuiGridPriv;
 
-static void wGuiGrid_layout(wGuiWidget *self)
+static void wGuiGrid_layout(wGuiNode *self)
 {
 	wAssert(self != NULL);
 }
 
-wGuiWidget *wGuiGrid()
+wGuiNode *wGuiGrid()
 {
-	wGuiWidget *ret;
+	wGuiNode *ret;
 
-	ret = wGuiWidgetAlloc(sizeof(wGuiGridPriv));
-	ret->type = W_GUI_GRID;
+	ret = wGuiNodeAlloc(sizeof(wGuiGridPriv));
+	ret->class = &wGuiGridClass;
 	ret->layout = wGuiGrid_layout;
 
 	return ret;
@@ -472,37 +516,43 @@ wGuiWidget *wGuiGrid()
 
 /* --------- Script --------- */
 
+static const wClass wGuiScriptClass =
+{
+	.name = "GuiScript",
+	.base = &wGuiNodeClass,
+	.version = 1
+};
+
 typedef struct _wGuiScriptPriv
 {
-	wGuiWidget base;
 	wString filename;
 } wGuiScriptPriv;
 
-static void wGuiScript_free(wGuiWidget *self)
+static void wGuiScript_free(wGuiNode *self)
 {
 	wAssert(self != NULL);
 	wGuiScriptPriv *priv = self->priv;
 	wStringFree(&priv->filename);
 }
 
-static void wGuiScript_paint(wGuiWidget *self, wPainter *painter)
+static void wGuiScript_paint(wGuiNode *self, wPainter *painter)
 {
 }
 
-static void wGuiScript_layout(wGuiWidget *self)
+static void wGuiScript_layout(wGuiNode *self)
 {
 }
 
-static void wGuiScript_mouseEvent(wGuiWidget *self)
+static void wGuiScript_mouseEvent(wGuiNode *self)
 {
 }
 
-wGuiWidget *wGuiScript()
+wGuiNode *wGuiScript()
 {
-	wGuiWidget *ret;
+	wGuiNode *ret;
 
-	ret = wGuiWidgetAlloc(sizeof(wGuiScriptPriv));
-	ret->type = W_GUI_SCRIPT;
+	ret = wGuiNodeAlloc(sizeof(wGuiScriptPriv));
+	ret->class = &wGuiScriptClass;
 	ret->paint = wGuiScript_paint;
 	ret->free = wGuiScript_free;
 	ret->layout = wGuiScript_layout;
