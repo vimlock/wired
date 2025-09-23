@@ -3,6 +3,7 @@ add_library(Wired SHARED
 	wAssert.c
 	wBuffer.c
 	wError.c
+	wEvent.c
 	wFile.c
 	wGui.c
 	wImage.c

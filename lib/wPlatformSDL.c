@@ -1,4 +1,5 @@
 #include "../include/wired/wPlatform.h"
+#include "../include/wired/wEvent.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wLog.h"
 
@@ -99,15 +100,51 @@ static int windowSwapBuffers()
 	return W_SUCCESS;
 }
 
+static void windowOnEvent(SDL_Event *e)
+{
+	wEvent evt;
+
+	switch (e->type) {
+	case SDL_QUIT:
+		evt.type = W_EVENT_QUIT;
+		break;
+	case SDL_KEYDOWN:
+		evt.type = W_EVENT_KEY_PRESS;
+		break;
+	case SDL_KEYUP:
+		evt.type = W_EVENT_KEY_RELEASE;
+		break;
+	case SDL_MOUSEMOTION:
+		evt.type = W_EVENT_MOUSE_MOVE;
+		evt.mouse.x = e->motion.x;
+		evt.mouse.y = e->motion.y;
+		break;
+	case SDL_MOUSEBUTTONDOWN:
+		evt.type = W_EVENT_MOUSE_PRESS;
+		evt.mouse.x = e->button.x;
+		evt.mouse.y = e->button.y;
+		break;
+	case SDL_MOUSEBUTTONUP:
+		evt.type = W_EVENT_MOUSE_RELEASE;
+		evt.mouse.x = e->button.x;
+		evt.mouse.y = e->button.y;
+		break;
+	case SDL_MOUSEWHEEL:
+		evt.type = W_EVENT_MOUSE_WHEEL;
+		evt.wheel.y = e->wheel.y;
+		break;
+	default:
+		return;
+	}
+
+	wEventPush(&evt);
+}
+
 static int windowPollEvents()
 {
 	SDL_Event e;
-	while (SDL_PollEvent(&e)) {
-		switch (e.type) {
-			case SDL_QUIT:
-				wApplicationQuit();
-				break;
-		}
+	while (wEventCanPush() && SDL_PollEvent(&e)) {
+		windowOnEvent(&e);
 	}
 
 	return W_SUCCESS;

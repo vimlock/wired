@@ -28,6 +28,8 @@ struct _wGuiNode
 	bool visible;
 	bool enabled;
 
+	bool hovered;
+
 	wRect rect;
 
 	wIVec2 minSize;
@@ -64,8 +66,13 @@ void wGuiNodeSetGeometry(wGuiNode *node, wRect rect);
 wRect wGuiNodeGetGeometry(wGuiNode *node);
 void wGuiNodeSetVisible(wGuiNode *node, bool visible);
 bool wGuiNodeIsVisible(wGuiNode *node);
+bool wGuiNodeContainsPoint(wGuiNode *node, float x, float y);
 
 wGuiNode *wGuiCanvas();
+void wGuiCanvasMousePress(wGuiNode *node, int x, int y);
+void wGuiCanvasMouseMove(wGuiNode *node, int x, int y);
+void wGuiCanvasMouseRelease(wGuiNode *node, int x, int y);
+wGuiNode *wGuiCanvasPick(wGuiNode *node, int x, int y);
 
 wGuiNode *wGuiImage();
 int wGuiImageSetImage(wGuiNode *node, wImage *img);

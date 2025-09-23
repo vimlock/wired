@@ -254,11 +254,9 @@ int wScriptLoad(const wString *script)
 	return W_SUCCESS;
 }
 
-int wScriptCall(wString *script, wString *function)
+static int wlScriptPush(wString *script)
 {
 	wAssert(script != NULL);
-	wAssert(wStringSize(script) != 0);
-	wAssert(function != NULL);
 
 	int err;
 
@@ -272,12 +270,96 @@ int wScriptCall(wString *script, wString *function)
 		return W_INVALID_OPERATION;
 	}
 
-	lua_getglobal(L, wStringData(function));
-	err = lua_pcall(L, 0, 0, 0);
+	return W_SUCCESS;
+}
+
+static int wlScriptDoCall(int numArgs)
+{
+	int err;
+
+	err = lua_pcall(L, numArgs, 0, 0);
 	if (err) {
-		wLogWarn("Error during update(): %s", lua_tostring(L, -1));
+		wLogWarn("%s", lua_tostring(L, -1));
 		return W_INVALID_OPERATION;
 	}
 
-	return W_NOT_IMPLEMENTED;
+	return W_SUCCESS;
+}
+
+int wScriptCall(wString *script, wString *function)
+{
+	wAssert(script != NULL);
+	wAssert(wStringSize(script) != 0);
+	wAssert(function != NULL);
+
+	int err;
+
+	err = wlScriptPush(script);
+	if (err)
+		return err;
+
+	lua_getglobal(L, wStringData(function));
+	return wlScriptDoCall(0);
+}
+
+int wScriptCallMousePress(wString *script, float x, float y, int button)
+{
+	int err;
+
+	err = wlScriptPush(script);
+	if (err)
+		return err;
+
+	lua_getglobal(L, "MousePress");
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 2);
+		return W_SUCCESS;
+	}
+
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
+	lua_pushinteger(L, button);
+
+	return wlScriptDoCall(3);
+}
+
+int wScriptCallMouseRelease(wString *script, float x, float y, int button)
+{
+	int err;
+
+	err = wlScriptPush(script);
+	if (err)
+		return err;
+
+	lua_getglobal(L, "MouseRelease");
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 2);
+		return W_SUCCESS;
+	}
+
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
+	lua_pushinteger(L, button);
+
+	return wlScriptDoCall(3);
+}
+
+int wScriptCallMouseMove(wString *script, float x, float y)
+{
+	int err;
+
+	err = wlScriptPush(script);
+	if (err)
+		return err;
+
+	lua_getglobal(L, "MouseMove");
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 2);
+		return W_SUCCESS;
+	}
+
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
+
+	return wlScriptDoCall(2);
 }

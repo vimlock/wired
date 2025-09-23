@@ -154,6 +154,12 @@ wVec2 wGuiNodeGetSize(wGuiNode *node)
 	return ret;
 }
 
+bool wGuiNodeContainsPoint(wGuiNode *node, float x, float y)
+{
+	wAssert(node != NULL);
+	return wRectContains(node->rect, x, y);
+}
+
 /* --------- Canvas --------- */
 
 static const wClass wGuiCanvasClass = {
@@ -161,6 +167,11 @@ static const wClass wGuiCanvasClass = {
 	.base = &wGuiNodeClass,
 	.version = 1,
 };
+
+typedef struct _wGuiCanvasPriv
+{
+	wGuiNode *hover;
+} wGuiCanvasPriv;
 
 static void wGuiCanvas_paint(wGuiNode *self, wPainter *painter)
 {
@@ -197,6 +208,57 @@ wGuiNode *wGuiCanvas()
 	ret->layout = wGuiCanvas_layout;
 
 	return ret;
+}
+
+static wGuiNode * pickRecurse(wGuiNode *node, int x, int y)
+{
+	for (int i = 0; i < wGuiNodeGetNumChildren(node); ++i) {
+		wGuiNode *child = wGuiNodeGetChild(node, i);
+
+		wGuiNode *nested = pickRecurse(child, x, y);
+		if (nested)
+			return nested;
+
+		if (wGuiNodeContainsPoint(child, x, y))
+			return child;
+	}
+
+	return NULL;
+}
+
+wGuiNode *wGuiCanvasPick(wGuiNode *node, int x, int y)
+{
+	for (int i = 0; i < wGuiNodeGetNumChildren(node); ++i) {
+		wGuiNode *child = wGuiNodeGetChild(node, i);
+		wGuiNode *nested = pickRecurse(child, x, y);
+		if (nested)
+			return nested;
+	}
+
+	return NULL;
+}
+
+void wGuiCanvasMousePress(wGuiNode *node, int x, int y)
+{
+}
+
+void wGuiCanvasMouseMove(wGuiNode *node, int x, int y)
+{
+	wGuiCanvasPriv *priv = node->priv;
+	if (priv->hover) {
+		priv->hover->hovered = false;
+		priv->hover = NULL;
+	}
+
+	wGuiNode *target = wGuiCanvasPick(node, x, y);
+	if (target) {
+		priv->hover = target;
+		priv->hover->hovered = true;
+	}
+}
+
+void wGuiCanvasMouseRelease(wGuiNode *node, int x, int y)
+{
 }
 
 /* --------- Image --------- */
@@ -255,17 +317,26 @@ typedef struct _wGuiButtonPriv
 	bool disabled;
 	wTexture *texture;
 	wImage *image;
+
+	wColor tintNormal;
+	wColor tintHover;
+
 } wGuiButtonPriv;
 
 static void wGuiButton_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
 
+	wPainterPushState(painter);
+
 	wGuiButtonPriv *priv = self->priv;
 
 	wRect rect = wGuiNodeGetGeometry(self);
 
-	wPainterDrawRect(painter, rect);
+	if (self->hovered)
+		wPainterSetColor(painter, priv->tintHover);
+	else
+		wPainterSetColor(painter, priv->tintNormal);
 
 	if (priv->image)
 		wPainterDrawTexture(painter, rect, priv->texture);
@@ -273,6 +344,8 @@ static void wGuiButton_paint(wGuiNode *self, wPainter *painter)
 		wPainterDrawRect(painter, rect);
 
 	wGuiNode_paint(self, painter);
+
+	wPainterPopState(painter);
 }
 
 static void wGuiButton_layout(wGuiNode *self)
@@ -307,6 +380,8 @@ wGuiNode *wGuiButton()
 
 	wGuiButtonPriv *priv = ret->priv;
 	priv->texture = wTextureAlloc();
+	priv->tintNormal = (wColor){1.0f, 1.0f, 1.0f, 1.0f};
+	priv->tintHover  = (wColor){0.8f, 0.8f, 0.8f, 1.0f};
 
 	return ret;
 }

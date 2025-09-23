@@ -215,11 +215,48 @@ static int wlGuiVBox__new(lua_State *L)
 	return 1;
 }
 
+wGuiNode *wlCheckGuiCanvas(lua_State *L, int index)
+{
+	return wlCheckClass(L, index, "GuiCanvas");
+}
+
+void wlPushGuiCanvas(lua_State *L, wGuiNode *node)
+{
+	wlPushClass(L, node, "GuiCanvas");
+}
+
 static int wlGuiCanvas__new(lua_State *L)
 {
 	wGuiNode *node = wGuiCanvas();
-	wlPushGuiNode(L, node);
+	wlPushGuiCanvas(L, node);
 	return 1;
+}
+
+static int wlGuiCanvasMousePress(lua_State *L)
+{
+	wGuiNode *self = wlCheckGuiCanvas(L, 1);
+	int x = luaL_checkinteger(L, 2);
+	int y = luaL_checkinteger(L, 3);
+	wGuiCanvasMousePress(self, x, y);
+	return 0;
+}
+
+static int wlGuiCanvasMouseRelease(lua_State *L)
+{
+	wGuiNode *self = wlCheckGuiCanvas(L, 1);
+	int x = luaL_checkinteger(L, 2);
+	int y = luaL_checkinteger(L, 3);
+	wGuiCanvasMouseRelease(self, x, y);
+	return 0;
+}
+
+static int wlGuiCanvasMouseMove(lua_State *L)
+{
+	wGuiNode *self = wlCheckGuiCanvas(L, 1);
+	int x = luaL_checkinteger(L, 2);
+	int y = luaL_checkinteger(L, 3);
+	wGuiCanvasMouseMove(self, x, y);
+	return 0;
 }
 
 static luaL_Reg wlGuiNode[] = {
@@ -270,6 +307,9 @@ static luaL_Reg wlGuiHBox[] = {
 
 static luaL_Reg wlGuiCanvas[] = {
 	{ "__new", wlGuiCanvas__new },
+	{ "MousePress",   wlGuiCanvasMousePress },
+	{ "MouseMove",    wlGuiCanvasMouseMove },
+	{ "MouseRelease", wlGuiCanvasMouseRelease },
 	{ NULL, NULL }
 };
 

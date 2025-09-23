@@ -1,4 +1,5 @@
 #include "../include/wired/wPlatform.h"
+#include "../include/wired/wEvent.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wMemory.h"
@@ -29,6 +30,8 @@ int wPlatformInit()
 		return err;
 	}
 
+	wEventInit();
+
 	return W_SUCCESS;
 }
 
@@ -39,6 +42,8 @@ void wPlatformFree()
 
 	wMemFree(wPlatform);
 	wPlatform = NULL;
+
+	wEventFree();
 }
 
 bool wApplicationShouldQuit()

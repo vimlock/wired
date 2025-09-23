@@ -3,6 +3,7 @@
 #include "../include/wired/wLog.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wArgs.h"
+#include "../include/wired/wEvent.h"
 
 enum
 {
@@ -67,7 +68,25 @@ int main(int argc, const char *argv[])
 
 	while (!wApplicationShouldQuit()) {
 
-		wWindowPollEvents();
+		wEventPump();
+
+		wEvent evt;
+		while (wEventPoll(&evt)) {
+			switch (evt.type) {
+				case W_EVENT_QUIT:
+					wApplicationQuit();
+					break;
+				case W_EVENT_MOUSE_MOVE:
+					wScriptCallMouseMove(&script, evt.mouse.x, evt.mouse.y);
+					break;
+				case W_EVENT_MOUSE_PRESS:
+					wScriptCallMousePress(&script, evt.mouse.x, evt.mouse.y, evt.mouse.button);
+					break;
+				case W_EVENT_MOUSE_RELEASE:
+					wScriptCallMouseRelease(&script, evt.mouse.x, evt.mouse.y, evt.mouse.button);
+					break;
+			}
+		}
 
 		wScriptCall(&script, &function);
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 typedef struct _wMat4
 {
 	float m[4][4];
@@ -62,6 +64,7 @@ wVec3 wVec3Normalized(wVec3 vec);
 wRect wRectNormalize(wRect rect);
 wRect wRectShrink(wRect rect, float amount);
 wRect wRectGrow(wRect rect, float amount);
+bool wRectContains(wRect rect, float x, float y);
 
 wRectI wRectIIntersect(wRectI a, wRectI b);
 wRectI wRectIShrink(wRectI rect, int amount);

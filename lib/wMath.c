@@ -63,6 +63,23 @@ wRect wRectGrow(wRect rect, float amount)
 	return rect;
 }
 
+bool wRectContains(wRect rect, float x, float y)
+{
+	if (x < rect.x)
+		return false;
+
+	if (x > rect.x + rect.w)
+		return false;
+
+	if (y < rect.y)
+		return false;
+
+	if (y > rect.y + rect.h)
+		return false;
+
+	return true;
+}
+
 wRectI wRectIIntersect(wRectI a, wRectI b)
 {
 	int x1 = (a.x > b.x) ? a.x : b.x;

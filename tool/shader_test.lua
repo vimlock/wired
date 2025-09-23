@@ -59,3 +59,11 @@ function update()
 	painter:SetColor(Color(1, 1, 1, 1))
 	canvas:Paint(painter)
 end
+
+function MousePress(x, y)
+	canvas:MousePress(x, y)
+end
+
+function MouseMove(x, y)
+	canvas:MouseMove(x, y)
+end
