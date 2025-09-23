@@ -9,8 +9,9 @@
 typedef struct _wPainter wPainter;
 typedef struct _wString wString;
 typedef struct _wGuiNode wGuiNode;
+typedef struct _wGuiWidget wGuiWidget;
 
-enum wGuiNodeType
+enum wGuiWidgetType
 {
 	W_GUI_IMAGE,
 	W_GUI_LABEL,
@@ -30,77 +31,82 @@ typedef struct _wGuiStyle
 	int sliderHandleSize;
 } wGuiStyle;
 
-struct _wGuiNode
+struct _wGuiWidget
 {
+	void (*free)(wGuiWidget *self);
+	void (*layout)(wGuiWidget *self);
+	void (*paint)(wGuiWidget *self, wPainter *painter);
+	void (*mouseEvent)(wGuiWidget *self);
+	void (*keyboardEvent)(wGuiWidget *self);
+
 	int type;
 
+	wGuiStyle *style;
+	wGuiNode *node;
+	void *priv;
+};
+
+struct _wGuiNode
+{
 	wRect rect;
 
 	wIVec2 minSize;
 	wIVec2 maxSize;
 
 	bool visible;
+	bool enabled;
+	wGuiWidget *widget;
 
 	wGuiNode *parent;
 	wGuiNode **children;
 	int numChildren;
-
-	wGuiStyle *style;
-
-	void *priv;
-
-	void (*layout)(wGuiNode *self);
-	void (*paint)(wGuiNode *self, wPainter *painter);
-	void (*mouseEvent)(wGuiNode *self);
-	void (*keyboardEvent)(wGuiNode *self);
 };
 
-wGuiNode *wGuiNodeAlloc(int privSize);
+wGuiNode *wGuiNodeAlloc();
 void wGuiNodeFree(wGuiNode *node);
-
+void wGuiNodeUpdateLayout(wGuiNode *node);
 void wGuiNodePaint(wGuiNode *node, wPainter *painter);
+int wGuiNodeGetNumChildren(wGuiNode *node);
+wGuiNode *wGuiNodeGetChild(wGuiNode *node, int child);
+void wGuiNodeAddChild(wGuiNode *node, wGuiNode *child);
+void wGuiNodeRemoveChild(wGuiNode *node, int child);
+wVec2 wGuiNodeGetPosition(wGuiNode *node);
+void wGuiNodeSetPosition(wGuiNode *node, wVec2 pos);
+wVec2 wGuiNodeGetSize(wGuiNode *node);
+void wGuiNodeSetSize(wGuiNode *node, wVec2 size);
+void wGuiNodeSetGeometry(wGuiNode *node, wRect rect);
+wRect wGuiNodeGetGeometry(wGuiNode *node);
+void wGuiNodeSetVisible(wGuiNode *node, bool visible);
+bool wGuiNodeIsVisible(wGuiNode *node);
 
-void wGuiDestroy(wGuiNode *node);
+void wGuiNodeSetWidget(wGuiNode *node, wGuiWidget *widget);
+wGuiWidget *wGuiNodeGetWidget(wGuiNode *node);
+wGuiWidget *wGuiNodeTakeWidget(wGuiNode *node);
 
-void wGuiUpdateLayout(wGuiNode *node);
+wGuiWidget *wGuiWidgetAlloc(int privSize);
+void wGuiWidgetFree(wGuiWidget *widget);
 
-int wGuiGetNumChildren(wGuiNode *node);
-wGuiNode *wGuiGetChild(wGuiNode *node, int child);
+wGuiWidget *wGuiImage();
+int wGuiImageSetImage(wGuiWidget *node, wImage *img);
 
-int wGuiNodeAddChild(wGuiNode *node, wGuiNode *child);
+wGuiWidget *wGuiButton();
+void wGuiButtonSetImage(wGuiWidget *node, wImage *img);
 
-void wGuiSetGeometry(wGuiNode *node, wRect rect);
-wRect wGuiGetGeometry(wGuiNode *node);
+wGuiWidget *wGuiLabel();
+int wGuiLabelSetText(wGuiWidget *node, wString *str);
 
-wVec2 wGuiGetPosition(wGuiNode *node);
-void wGuiSetPosition(wGuiNode *node, wVec2 pos);
+wGuiWidget *wGuiVBox();
 
-wVec2 wGuiGetSize(wGuiNode *node);
-void wGuiSetSize(wGuiNode *node, wVec2 size);
+wGuiWidget *wGuiHBox();
 
-void wGuiSetVisible(wGuiNode *node, bool visible);
-bool wGuiIsVisible(wGuiNode *node);
+wGuiWidget *wGuiGrid();
+int wGuiGridSetSize(wGuiWidget *node, int cols);
 
-wGuiNode *wGuiImage();
-int wGuiImageSetImage(wGuiNode *node, wImage *img);
+wGuiWidget *wGuiSlider();
+int wGuiSliderSetRange(wGuiWidget *node, int min, int max);
 
-wGuiNode *wGuiButton();
-
-wGuiNode *wGuiLabel();
-int wGuiLabelSetText(wGuiNode *node, wString *str);
-
-wGuiNode *wGuiVBox();
-
-wGuiNode *wGuiHBox();
-
-wGuiNode *wGuiGrid();
-int wGuiGridSetSize(wGuiNode *node, int cols);
-
-wGuiNode *wGuiSlider();
-int wGuiSliderSetRange(wGuiNode *node, int min, int max);
-
-wGuiNode *wGuiScrollArea();
-wGuiNode *wGuiScript();
+wGuiWidget *wGuiScrollArea();
+wGuiWidget *wGuiScript();
 
 /* ---------- Clipboard ---------- */
 

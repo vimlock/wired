@@ -47,13 +47,17 @@ tex:LoadFromImage(img)
 vbox = GuiVBox()
 vbox:SetSize(800, 600)
 btn1 = vbox:AddChild(GuiButton({
-	image=image,
-	color=Color(1,0,0,1),
-	text="Hello",
+	image=img
 }))
-btn2 = vbox:AddChild(GuiButton())
-btn3 = vbox:AddChild(GuiButton())
-btn4 = vbox:AddChild(GuiButton())
+btn2 = vbox:AddChild(GuiButton({
+	image=img
+}))
+btn3 = vbox:AddChild(GuiButton({
+	image=img
+}))
+btn4 = vbox:AddChild(GuiButton({
+	image=img
+}))
 
 vbox:UpdateLayout()
 

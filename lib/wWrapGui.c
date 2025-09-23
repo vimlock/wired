@@ -114,55 +114,66 @@ static int wlGuiSetVisible(lua_State *L)
 	return 0;
 }
 
-static int wlGuiImage(lua_State *L)
+static int wlGuiImage__new(lua_State *L)
 {
 	wGuiNode *node = wGuiImage();
 	wlPushGuiNode(L, node);
 	return 1;
 }
 
-static int wlGuiGrid(lua_State *L)
+static int wlGuiGrid__new(lua_State *L)
 {
 	wGuiNode *node = wGuiGrid();
 	wlPushGuiNode(L, node);
 	return 1;
 }
 
-static int wlGuiLabel(lua_State *L)
+static int wlGuiLabel__new(lua_State *L)
 {
 	wGuiNode *node = wGuiLabel();
 	wlPushGuiNode(L, node);
 	return 1;
 }
 
-static int wlGuiTextArea(lua_State *L)
+void wlPushGuiButton(lua_State *L, wGuiNode *node)
 {
-	// TODO
-	return 0;
+	wGuiNode **self = lua_newuserdata(L, sizeof(wGuiNode*));
+	*self = node;
+
+	luaL_getmetatable(L, "GuiButton");
+	lua_setmetatable(L, -2);
 }
 
-static int wlGuiButton(lua_State *L)
+static int wlGuiButton__new(lua_State *L)
 {
 	wGuiNode *node = wGuiButton();
 	wlPushGuiNode(L, node);
 	return 1;
 }
 
-static int wlGuiHBox(lua_State *L)
+static int wlGuiButtonSetImage(lua_State *L)
+{
+	wGuiNode *node = wlCheckGuiNode(L, 1);
+	wImage *img = wlCheckImage(L, 2);
+	wGuiButtonSetImage(node, img);
+	return 0;
+}	
+
+static int wlGuiHBox__new(lua_State *L)
 {
 	wGuiNode *node = wGuiHBox();
 	wlPushGuiNode(L, node);
 	return 1;
 }
 
-static int wlGuiVBox(lua_State *L)
+static int wlGuiVBox__new(lua_State *L)
 {
 	wGuiNode *node = wGuiVBox();
 	wlPushGuiNode(L, node);
 	return 1;
 }
 
-static int wlGuiScript(lua_State *L)
+static int wlGuiScript__new(lua_State *L)
 {
 	// TODO
 	return 0;
@@ -179,30 +190,23 @@ static luaL_Reg wlGuiNode[] = {
 	{ "GetChild", wlGuiGetChild },
 	{ "GetChildren", wlGuiGetChildren },
 	{ "UpdateLayout", wlGuiUpdateLayout },
-
 	{ NULL, NULL }
 };
 
-static luaL_Reg wlGuiFuncs[] = {
-	{ "Image",    wlGuiImage },
-	{ "Label",    wlGuiLabel },
-	{ "TextArea", wlGuiTextArea },
-	{ "Button",   wlGuiButton },
-	{ "HBox",     wlGuiHBox },
-	{ "VBox",     wlGuiVBox },
-	{ "Grid",     wlGuiGrid },
-	{ "Script",   wlGuiScript },
+static luaL_Reg wlGuiButton[] = {
+	{ "SetImage", wlGuiButtonSetImage },
+	{ NULL, NULL }
 };
 
 void wlRegisterGui(lua_State *L)
 {
 	wlRegisterType(L, "GuiNode", wlGuiNode);
 
-	wlRegisterFunc(L, "GuiButton", wlGuiButton);
-	wlRegisterFunc(L, "GuiGrid", wlGuiGrid);
-	wlRegisterFunc(L, "GuiHBox", wlGuiHBox);
-	wlRegisterFunc(L, "GuiImage", wlGuiImage);
-	wlRegisterFunc(L, "GuiLabel", wlGuiLabel);
-	wlRegisterFunc(L, "GuiScript", wlGuiScript);
-	wlRegisterFunc(L, "GuiVBox", wlGuiVBox);
+	wlRegisterFunc(L, "GuiButton", wlGuiButton__new);
+	wlRegisterFunc(L, "GuiGrid",   wlGuiGrid__new);
+	wlRegisterFunc(L, "GuiHBox",   wlGuiHBox__new);
+	wlRegisterFunc(L, "GuiImage",  wlGuiImage__new);
+	wlRegisterFunc(L, "GuiLabel",  wlGuiLabel__new);
+	wlRegisterFunc(L, "GuiScript", wlGuiScript__new);
+	wlRegisterFunc(L, "GuiVBox",   wlGuiVBox__new);
 }
