@@ -20,8 +20,8 @@ struct _wShader
 	wNativeHandle handle;
 	wPlatformOps *platform;
 
-	wString vertSource;
-	wString fragSource;
+	wString *vertSource;
+	wString *fragSource;
 
 	bool compiled;
 };
@@ -33,6 +33,8 @@ wShader *wShaderAlloc()
 	ret = wMemAlloc(sizeof(wShader));
 	memset(ret, 0x0, sizeof(wShader));
 	ret->class = &wShaderClass;
+	ret->vertSource = wStringAlloc();
+	ret->fragSource = wStringAlloc();
 
 	return ret;
 }
@@ -77,19 +79,22 @@ void wShaderFree(wShader *shader)
 	wPlatform->shaderDestroy(shader->handle);
 	shader->handle = 0;
 
+	wStringFree(shader->vertSource);
+	wStringFree(shader->fragSource);
+
 	wMemFree(shader);
 }
 
-int wShaderSetVertex(wShader *shader, const wString *source)
+void wShaderSetVertex(wShader *shader, const wString *source)
 {
 	wAssert(shader != NULL);
-	return wStringCopy(source, &shader->vertSource);
+	return wStringAssign(source, shader->vertSource);
 }
 
-int wShaderSetFragment(wShader *shader, const wString *source)
+void wShaderSetFragment(wShader *shader, const wString *source)
 {
 	wAssert(shader != NULL);
-	return wStringCopy(source, &shader->fragSource);
+	return wStringAssign(source, shader->fragSource);
 }
 
 int wShaderCompile(wShader *shader)
@@ -98,7 +103,7 @@ int wShaderCompile(wShader *shader)
 
 	int err;
 
-	err = shader->platform->shaderCompile(shader->handle, &shader->vertSource, &shader->fragSource);
+	err = shader->platform->shaderCompile(shader->handle, shader->vertSource, shader->fragSource);
 	if (err)
 		return err;
 

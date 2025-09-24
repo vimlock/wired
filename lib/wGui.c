@@ -434,7 +434,7 @@ static const wClass wGuiLabelClass =
 
 typedef struct _wGuiLabelPriv
 {
-	wString text;
+	wString *text;
 } wGuiLabelPriv;
 
 static void wGuiLabel_paint(wGuiNode *self, wPainter *painter)
@@ -446,7 +446,7 @@ static void wGuiLabel_free(wGuiNode *self)
 {
 	wAssert(self != NULL);
 	wGuiLabelPriv *priv = self->priv;
-	wStringFree(&priv->text);
+	wStringFree(priv->text);
 }
 
 wGuiNode *wGuiLabel()
@@ -670,14 +670,14 @@ static const wClass wGuiScriptClass =
 
 typedef struct _wGuiScriptPriv
 {
-	wString filename;
+	wString *filename;
 } wGuiScriptPriv;
 
 static void wGuiScript_free(wGuiNode *self)
 {
 	wAssert(self != NULL);
 	wGuiScriptPriv *priv = self->priv;
-	wStringFree(&priv->filename);
+	wStringFree(priv->filename);
 }
 
 static void wGuiScript_paint(wGuiNode *self, wPainter *painter)

@@ -1,6 +1,5 @@
 #include "../include/wired/wBuffer.h"
 #include "../include/wired/wAssert.h"
-#include "../include/wired/wError.h"
 #include "../include/wired/wMemory.h"
 
 #include <string.h>
@@ -30,46 +29,33 @@ void wBufferClear(wBuffer *buf)
 	buf->size = 0;
 }
 
-int wBufferResize(wBuffer *buf, size_t newSize)
+void wBufferResize(wBuffer *buf, size_t newSize)
 {
 	wAssert(buf != NULL);
 
-	int err;
-	err = wBufferReserve(buf, newSize);
-	if (err)
-		return err;
-
+	wBufferReserve(buf, newSize);
 	buf->size = newSize;
-
-	return W_SUCCESS;
 }
 
-int wBufferReserve(wBuffer *buf, size_t capacity)
+void wBufferReserve(wBuffer *buf, size_t capacity)
 {
 	wAssert(buf != NULL);
 
 	if (buf->capacity >= capacity)
-		return W_SUCCESS;
+		return;
 
 	buf->data = wMemRealloc(buf->data, capacity);
 	buf->capacity = capacity;
-
-	return W_SUCCESS;
 }
 
-int wBufferAppend(wBuffer *buf, size_t size, const void *data)
+void wBufferAppend(wBuffer *buf, size_t size, const void *data)
 {
 	wAssert(buf != NULL);
 	wAssert(data != NULL);
 
 	int err;
 
-	err = wBufferReserve(buf, buf->size + size);
-	if (err)
-		return err;
-
+	wBufferReserve(buf, buf->size + size);
 	memcpy(((char*)buf->data) + buf->size, data, size);
 	buf->size += size;
-
-	return W_SUCCESS;
 }

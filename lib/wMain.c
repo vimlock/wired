@@ -15,13 +15,8 @@ int main(int argc, const char *argv[])
 {
 	int err;
 
-	wString script;
-	wStringInit(&script);
-
-	wString function;
-
-	wStringInit(&function);
-	wStringFromCString(&function, "update");
+	wString *script = NULL;
+	wString *function = wStringFromCString("update");
 
 	wLogOpenStderr();
 
@@ -53,9 +48,9 @@ int main(int argc, const char *argv[])
 
 
 	if (wArgsGetNumPositional() > 0) {
-		wStringFromCString(&script, wArgsGetPositional(0));
+		script = wStringFromCString(wArgsGetPositional(0));
 
-		err = wScriptLoad(&script);
+		err = wScriptLoad(script);
 		if (err) {
 			wLogFatal("Failed to execute script: %s", wErrorStr(err));
 			wApplicationQuit();
@@ -77,18 +72,18 @@ int main(int argc, const char *argv[])
 					wApplicationQuit();
 					break;
 				case W_EVENT_MOUSE_MOVE:
-					wScriptCallMouseMove(&script, evt.mouse.x, evt.mouse.y);
+					wScriptCallMouseMove(script, evt.mouse.x, evt.mouse.y);
 					break;
 				case W_EVENT_MOUSE_PRESS:
-					wScriptCallMousePress(&script, evt.mouse.x, evt.mouse.y, evt.mouse.button);
+					wScriptCallMousePress(script, evt.mouse.x, evt.mouse.y, evt.mouse.button);
 					break;
 				case W_EVENT_MOUSE_RELEASE:
-					wScriptCallMouseRelease(&script, evt.mouse.x, evt.mouse.y, evt.mouse.button);
+					wScriptCallMouseRelease(script, evt.mouse.x, evt.mouse.y, evt.mouse.button);
 					break;
 			}
 		}
 
-		wScriptCall(&script, &function);
+		wScriptCall(script, function);
 
 		err = wWindowSwapBuffers();
 		if (err) {
@@ -101,7 +96,7 @@ int main(int argc, const char *argv[])
 	wScriptVmFree();
 	wPlatformFree();
 
-	wStringFree(&script);
+	wStringFree(script);
 
 	return W_EXIT_SUCCESS;
 }

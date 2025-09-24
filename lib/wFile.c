@@ -281,9 +281,7 @@ int wFileReadAll(const wString *path, wBuffer *buf)
 		if (nread == 0)
 			break;
 
-		err = wBufferAppend(buf, nread, tmp);
-		if (err)
-			goto fail;
+		wBufferAppend(buf, nread, tmp);
 	}
 
 	wFileClose(file);
@@ -329,9 +327,7 @@ int wFileReadAllText(const wString *path, wString *buf)
 		if (nread == 0)
 			break;
 
-		err = wStringAppend(buf, nread, tmp);
-		if (err)
-			goto fail;
+		wStringAppend(buf, nread, tmp);
 	}
 
 	wFileClose(file);

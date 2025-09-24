@@ -18,6 +18,13 @@ extern "C" {
 
 typedef struct _wClass wClass;
 
+typedef struct _wlEnum wlEnum;
+struct _wlEnum
+{
+	const char *name;
+	int value;
+};
+
 void wlPushVec2(lua_State *L, wVec2 vec);
 wVec2 *wlCheckVec2(lua_State *L, int index);
 void wlPushIVec2(lua_State *L, wIVec2 vec);
@@ -61,6 +68,7 @@ void wlDumpStack();
 void wlRegisterFunc(lua_State *L, const char *name, lua_CFunction func);
 void wlRegisterType(lua_State *L, const char *name, const luaL_Reg *reg);
 void wlRegisterDerivedType(lua_State *L, const char *name, const char *base, const luaL_Reg *reg);
+void wlRegisterEnum(lua_State *L, const char *name, const  wlEnum *e);
 
 void wlRegisterFile(lua_State *L);
 void wlRegisterGui(lua_State *L);

@@ -1,19 +1,18 @@
 #include "../include/wired/wString.h"
 #include "../include/wired/wMemory.h"
-#include "../include/wired/wError.h"
 #include "../include/wired/wAssert.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
 
-void wStringInit(wString *str)
+wString *wStringAlloc()
 {
-	wAssert(str != NULL);
-
-	str->data = NULL;
-	str->size = 0;
-	str->capacity = 0;
+	wString *ret = wMemAlloc(sizeof(wString));
+	ret->data = NULL;
+	ret->size = 0;
+	ret->capacity = 0;
+	return ret;
 }
 
 void wStringFree(wString *str)
@@ -24,71 +23,69 @@ void wStringFree(wString *str)
 	str->data = NULL;
 	str->size = 0;
 	str->capacity = 0;
+
+	wMemFree(str);
 }
 
-int wStringCopy(const wString *src, wString *dst)
+wString *wStringCopy(const wString *src)
 {
 	wAssert(src != NULL);
-	wAssert(dst != NULL);
 
 	int err;
 
-	err = wStringReserve(dst, src->size);
-	if (err)
-		return err;
-
-	memcpy(dst->data, src->data, src->size);
-	dst->size = src->size;
-	dst->data[dst->size] = '\0';
-
-	return W_SUCCESS;
+	wString *ret = wStringAlloc();
+	wStringAssign(src, ret);
+	return ret;
 }
 
-int wStringFromCString(wString *str, const char *cstr)
+wString *wStringFromCString(const char *cstr)
 {
-	wAssert(str != NULL);
 	wAssert(cstr != NULL);
 
 	int err;
 	int len;
 
+	wString *ret = wStringAlloc();
+
 	len = strlen(cstr);
+	wStringReserve(ret, len);
 
-	err = wStringReserve(str, len);
-	if (err)
-		return err;
+	ret->size = len;
+	memcpy(ret->data, cstr, len + 1);
 
-	str->size = len;
-	memcpy(str->data, cstr, len + 1);
-
-	return W_SUCCESS;
+	return ret;
 }
 
-int wStringFormat(wString *str, const char *fmt, ...)
+void wStringAssign(const wString *src, wString *dst)
 {
-	wAssert(str != NULL);
+	wStringReserve(dst, src->size);
+
+	memcpy(dst->data, src->data, src->size);
+	dst->size = src->size;
+	dst->data[dst->size] = '\0';
+}
+
+wString *wStringFormat(const char *fmt, ...)
+{
 	wAssert(fmt != NULL);
 
 	int size;
 	int err;
 	va_list ap;
 
+	wString *ret = wStringAlloc();
+
 	va_start(ap, fmt);
 	size = vsnprintf(NULL, 0, fmt, ap);
 	va_end(ap);
 
-	if (size < 0)
-		return W_INVALID_ARGUMENT;
-
-	err = wStringReserve(str, size);
-	if (err)
-		return err;
+	wStringReserve(ret, size);
 
 	va_start(ap, fmt);
-	vsnprintf(str->data, size + 1, fmt, ap);
+	vsnprintf(ret->data, size + 1, fmt, ap);
 	va_end(ap);
 
-	return W_NOT_IMPLEMENTED;
+	return ret;
 }
 
 void wStringClear(wString *str)
@@ -109,32 +106,24 @@ size_t wStringSize(wString *str)
 	return str->size;
 }
 
-int wStringReserve(wString *str, size_t capacity)
+void wStringReserve(wString *str, size_t capacity)
 {
 	wAssert(str != NULL);
 
 	if (str->capacity >= capacity)
-		return W_SUCCESS;
+		return;
 
 	str->data = wMemRealloc(str->data, capacity + 1);
 	str->capacity = capacity;
-
-	return W_SUCCESS;
 }
 
-int wStringAppend(wString *str, size_t size, const char *data)
+void wStringAppend(wString *str, size_t size, const char *data)
 {
-	int err;
-
-	err = wStringReserve(str, str->size + size);
-	if (err)
-		return err;
+	wStringReserve(str, str->size + size);
 
 	memcpy(str->data + str->size, data, size);
 	str->size += size;
 	str->data[str->size] = 0;
-
-	return W_SUCCESS;
 }
 
 bool wStringEquals(const wString *a, const wString *b)

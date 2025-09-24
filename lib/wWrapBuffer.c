@@ -1,5 +1,4 @@
 #include "../include/wired/wWrap.h"
-#include "../include/wired/wError.h"
 
 wBuffer *wlCheckBuffer(lua_State *L, int index)
 {
@@ -33,10 +32,7 @@ static int wlBufferReserve(lua_State *L)
 {
 	wBuffer *self = wlCheckBuffer(L, 1);
 	size_t capacity = luaL_checkinteger(L, 2);
-	int err = wBufferReserve(self, capacity);
-	if (err)
-		luaL_error(L, "%s", wErrorStr(err));
-
+	wBufferReserve(self, capacity);
 	return 0;
 }
 
@@ -44,10 +40,7 @@ static int wlBufferResize(lua_State *L)
 {
 	wBuffer *self = wlCheckBuffer(L, 1);
 	size_t size = luaL_checkinteger(L, 2);
-	int err = wBufferResize(self, size);
-	if (err)
-		luaL_error(L, "%s", wErrorStr(err));
-
+	wBufferResize(self, size);
 	return 0;
 }
 

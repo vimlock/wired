@@ -18,7 +18,7 @@ size_t wBufferSize(const wBuffer *buf);
 void wBufferClear(wBuffer *buf);
 void wBufferSwap(wBuffer *a, wBuffer *b);
 
-int wBufferResize(wBuffer *buf, size_t newSize);
-int wBufferReserve(wBuffer *buf, size_t newCapacity);
+void wBufferResize(wBuffer *buf, size_t newSize);
+void wBufferReserve(wBuffer *buf, size_t newCapacity);
 
-int wBufferAppend(wBuffer *buf, size_t size, const void *data);
+void wBufferAppend(wBuffer *buf, size_t size, const void *data);
