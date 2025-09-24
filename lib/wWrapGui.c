@@ -235,26 +235,28 @@ static int wlGuiCanvas__new(lua_State *L)
 static int wlGuiCanvasMousePress(lua_State *L)
 {
 	wGuiNode *self = wlCheckGuiCanvas(L, 1);
-	int x = luaL_checkinteger(L, 2);
-	int y = luaL_checkinteger(L, 3);
-	wGuiCanvasMousePress(self, x, y);
+	float x = luaL_checknumber(L, 2);
+	float y = luaL_checknumber(L, 3);
+	int button = luaL_checkinteger(L, 4);
+	wGuiCanvasMousePress(self, x, y, button);
 	return 0;
 }
 
 static int wlGuiCanvasMouseRelease(lua_State *L)
 {
 	wGuiNode *self = wlCheckGuiCanvas(L, 1);
-	int x = luaL_checkinteger(L, 2);
-	int y = luaL_checkinteger(L, 3);
-	wGuiCanvasMouseRelease(self, x, y);
+	float x = luaL_checknumber(L, 2);
+	float y = luaL_checknumber(L, 3);
+	int button = luaL_checkinteger(L, 4);
+	wGuiCanvasMouseRelease(self, x, y, button);
 	return 0;
 }
 
 static int wlGuiCanvasMouseMove(lua_State *L)
 {
 	wGuiNode *self = wlCheckGuiCanvas(L, 1);
-	int x = luaL_checkinteger(L, 2);
-	int y = luaL_checkinteger(L, 3);
+	float x = luaL_checknumber(L, 2);
+	float y = luaL_checknumber(L, 3);
 	wGuiCanvasMouseMove(self, x, y);
 	return 0;
 }

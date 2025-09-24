@@ -171,6 +171,7 @@ static const wClass wGuiCanvasClass = {
 typedef struct _wGuiCanvasPriv
 {
 	wGuiNode *hover;
+	wGuiNode *press;
 } wGuiCanvasPriv;
 
 static void wGuiCanvas_paint(wGuiNode *self, wPainter *painter)
@@ -202,7 +203,7 @@ static void wGuiCanvas_layout(wGuiNode *self)
 
 wGuiNode *wGuiCanvas()
 {
-	wGuiNode *ret = wGuiNodeAlloc(0);
+	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiCanvasPriv));
 	ret->class = &wGuiCanvasClass;
 	ret->paint = wGuiCanvas_paint;
 	ret->layout = wGuiCanvas_layout;
@@ -226,7 +227,7 @@ static wGuiNode * pickRecurse(wGuiNode *node, int x, int y)
 	return NULL;
 }
 
-wGuiNode *wGuiCanvasPick(wGuiNode *node, int x, int y)
+wGuiNode *wGuiCanvasPick(wGuiNode *node, float x, float y)
 {
 	for (int i = 0; i < wGuiNodeGetNumChildren(node); ++i) {
 		wGuiNode *child = wGuiNodeGetChild(node, i);
@@ -238,13 +239,33 @@ wGuiNode *wGuiCanvasPick(wGuiNode *node, int x, int y)
 	return NULL;
 }
 
-void wGuiCanvasMousePress(wGuiNode *node, int x, int y)
-{
-}
-
-void wGuiCanvasMouseMove(wGuiNode *node, int x, int y)
+void wGuiCanvasMousePress(wGuiNode *node, float x, float y, int button)
 {
 	wGuiCanvasPriv *priv = node->priv;
+
+	wGuiNode *target = wGuiCanvasPick(node, x, y);
+	if (target == priv->press)
+		return;
+
+	if (priv->press && priv->press->mouseRelease) {
+		priv->press->mouseRelease(priv->press, x, y, button);
+	}
+
+	priv->press = target;
+
+	if (priv->press && priv->press->mousePress) {
+		priv->press->mousePress(priv->press, x, y, button);
+	}
+}
+
+void wGuiCanvasMouseMove(wGuiNode *node, float x, float y)
+{
+	wGuiCanvasPriv *priv = node->priv;
+
+	if (priv->press && priv->press->mouseMove) {
+		priv->press->mouseMove(priv->press, x, y);
+	}
+
 	if (priv->hover) {
 		priv->hover->hovered = false;
 		priv->hover = NULL;
@@ -257,8 +278,15 @@ void wGuiCanvasMouseMove(wGuiNode *node, int x, int y)
 	}
 }
 
-void wGuiCanvasMouseRelease(wGuiNode *node, int x, int y)
+void wGuiCanvasMouseRelease(wGuiNode *node, float x, float y, int button)
 {
+	wGuiCanvasPriv *priv = node->priv;
+
+	if (priv->press && priv->press->mouseRelease) {
+		priv->press->mouseRelease(priv->press, x, y, button);
+	}
+
+	priv->press = NULL;
 }
 
 /* --------- Image --------- */
@@ -358,7 +386,7 @@ static void wGuiButton_layout(wGuiNode *self)
 	}
 }
 
-static void wGuiButton_mouseEvent(wGuiNode *self)
+static void wGuiButton_mousePress(wGuiNode *self, float x, float y, int button)
 {
 	wAssert(self != NULL);
 	wLogInfo("Button clicked");
@@ -375,7 +403,7 @@ wGuiNode *wGuiButton()
 	ret->class = &wGuiButtonClass;
 	ret->paint = wGuiButton_paint;
 	ret->layout = wGuiButton_layout;
-	ret->mouseEvent = wGuiButton_mouseEvent;
+	ret->mousePress = wGuiButton_mousePress;
 	ret->keyboardEvent = wGuiButton_keyboardEvent;
 
 	wGuiButtonPriv *priv = ret->priv;
@@ -465,7 +493,7 @@ static void wGuiSlider_paint(wGuiNode *self, wPainter *painter)
 	wPainterDrawRect(painter, handle);
 }
 
-static void wGuiSlider_mouseEvent(wGuiNode *self)
+static void wGuiSlider_mousePress(wGuiNode *self, float x, float y, int button)
 {
 	wAssert(self != NULL);
 }
@@ -481,7 +509,7 @@ wGuiNode *wGuiSlider()
 	ret->class = &wGuiSliderClass;
 	ret->paint = wGuiSlider_paint;
 	ret->free = wGuiSlider_free;
-	ret->mouseEvent = wGuiSlider_mouseEvent;
+	ret->mousePress   = wGuiSlider_mousePress;
 	ret->keyboardEvent = wGuiSlider_keyboardEvent;
 
 	return ret;
@@ -512,7 +540,7 @@ static void wGuiScrollArea_paint(wGuiNode *self, wPainter *painter)
 	wAssert(self != NULL);
 }
 
-static void wGuiScrollArea_mouseEvent(wGuiNode *self)
+static void wGuiScrollArea_mouseMove(wGuiNode *self, float x, float y)
 {
 	wAssert(self != NULL);
 }
@@ -525,7 +553,7 @@ wGuiNode *wGuiScrollArea()
 
 	ret->class = &wGuiScrollAreaClass;
 	ret->paint = wGuiScrollArea_paint;
-	ret->mouseEvent = wGuiScrollArea_mouseEvent;
+	ret->mouseMove = wGuiScrollArea_mouseMove;
 	ret->free = wGuiScrollArea_free;
 
 	return ret;
@@ -660,7 +688,7 @@ static void wGuiScript_layout(wGuiNode *self)
 {
 }
 
-static void wGuiScript_mouseEvent(wGuiNode *self)
+static void wGuiScript_mouseMove(wGuiNode *self, float x, float y)
 {
 }
 
@@ -673,7 +701,7 @@ wGuiNode *wGuiScript()
 	ret->paint = wGuiScript_paint;
 	ret->free = wGuiScript_free;
 	ret->layout = wGuiScript_layout;
-	ret->mouseEvent = wGuiScript_mouseEvent;
+	ret->mouseMove = wGuiScript_mouseMove;
 
 	return ret;
 }

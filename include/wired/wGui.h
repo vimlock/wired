@@ -44,7 +44,9 @@ struct _wGuiNode
 	void (*free)(wGuiNode *self);
 	void (*layout)(wGuiNode *self);
 	void (*paint)(wGuiNode *self, wPainter *painter);
-	void (*mouseEvent)(wGuiNode *self);
+	void (*mousePress)(wGuiNode *self, float x, float y,  int button);
+	void (*mouseMove)(wGuiNode *self, float x, float y);
+	void (*mouseRelease)(wGuiNode *self, float x, float y, int button);
 	void (*keyboardEvent)(wGuiNode *self);
 
 	void *priv;
@@ -69,10 +71,10 @@ bool wGuiNodeIsVisible(wGuiNode *node);
 bool wGuiNodeContainsPoint(wGuiNode *node, float x, float y);
 
 wGuiNode *wGuiCanvas();
-void wGuiCanvasMousePress(wGuiNode *node, int x, int y);
-void wGuiCanvasMouseMove(wGuiNode *node, int x, int y);
-void wGuiCanvasMouseRelease(wGuiNode *node, int x, int y);
-wGuiNode *wGuiCanvasPick(wGuiNode *node, int x, int y);
+void wGuiCanvasMousePress(wGuiNode *node, float x, float y, int button);
+void wGuiCanvasMouseMove(wGuiNode *node, float x, float y);
+void wGuiCanvasMouseRelease(wGuiNode *node, float x, float y, int button);
+wGuiNode *wGuiCanvasPick(wGuiNode *node, float x, float y);
 
 wGuiNode *wGuiImage();
 int wGuiImageSetImage(wGuiNode *node, wImage *img);

@@ -60,8 +60,12 @@ function update()
 	canvas:Paint(painter)
 end
 
-function MousePress(x, y)
-	canvas:MousePress(x, y)
+function MousePress(x, y, button)
+	canvas:MousePress(x, y, button)
+end
+
+function MouseRelease(x, y, button)
+	canvas:MouseRelease(x, y, button)
 end
 
 function MouseMove(x, y)
