@@ -98,6 +98,8 @@ int wGuiSliderSetRange(wGuiNode *node, int min, int max);
 wGuiNode *wGuiScrollArea();
 wGuiNode *wGuiScript();
 
+extern const wClass wGuiNodeClass;
+
 /* ---------- Clipboard ---------- */
 
 void wClipboardSetText(const wString *str);

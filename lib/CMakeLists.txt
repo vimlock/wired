@@ -6,6 +6,14 @@ add_library(Wired SHARED
 	wEvent.c
 	wFile.c
 	wGui.c
+	wGuiButton.c
+	wGuiCanvas.c
+	wGuiGrid.c
+	wGuiHBox.c
+	wGuiImage.c
+	wGuiLabel.c
+	wGuiScroll.c
+	wGuiVBox.c
 	wImage.c
 	wImagePNG.c
 	wLog.c
