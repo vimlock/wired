@@ -4,5 +4,6 @@ project(wired VERSION 0.1.0 LANGUAGES C)
 
 set(OpenGL_GL_PREFERENCE GLVND)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable")
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 add_subdirectory(lib)

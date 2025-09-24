@@ -158,7 +158,6 @@ bool wGuiNodeContainsPoint(wGuiNode *node, float x, float y)
 }
 
 
-
 /* --------- Script --------- */
 
 static const wClass wGuiScriptClass =

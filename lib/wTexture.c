@@ -87,8 +87,11 @@ int wTextureLoadFromImage(wTexture *tex, const wImage *img)
 
 	wPlatform->textureData(
 		tex->handle,
+		0,
+		0,
 		tex->width,
 		tex->height,
+		W_IMAGE_RGBA8,
 		wImageData((wImage*)img)
 	);
 

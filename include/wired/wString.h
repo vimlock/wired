@@ -25,5 +25,5 @@ bool wStringEquals(const wString *a, const wString *b);
 void wStringClear(wString *str);
 
 const char *wStringData(const wString *str);
-size_t wStringSize(wString *str);
+size_t wStringSize(const wString *str);
 void wStringReserve(wString *str, size_t capacity);

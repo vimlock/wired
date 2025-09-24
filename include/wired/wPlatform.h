@@ -3,6 +3,15 @@
 #include "wString.h"
 #include "wGraphics.h"
 
+typedef struct _wVertex wVertex;
+struct _wVertex
+{
+	wVec3 pos;
+	wVec2 uv;
+};
+
+typedef uint16_t wIndex;
+
 typedef struct _wPlatformOps
 {
 	int (*windowCreate)(int w, int h);
@@ -34,7 +43,7 @@ typedef struct _wPlatformOps
 	int (*textureSetFilter)(wNativeHandle tex, int mode);
 	int (*textureSetWrap)(wNativeHandle tex, int mode);
 	int (*textureBind)(wNativeHandle tex, int index);
-	int (*textureData)(wNativeHandle tex, int w, int h, const void *data);
+	int (*textureData)(wNativeHandle tex, int x, int y, int w, int h, int fmt, const void *data);
 
 	wNativeHandle (*bufferCreate)(size_t size, const void *data);
 	void (*bufferDestroy)(wNativeHandle buf);

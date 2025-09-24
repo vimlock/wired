@@ -3,6 +3,7 @@
 #include "../include/wired/wLog.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wTexture.h"
+#include "../include/wired/wImage.h"
 
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -317,9 +318,22 @@ static int textureBind(wNativeHandle tex, int index)
 	return W_SUCCESS;
 }
 
-static int textureData(wNativeHandle tex, int w, int h, const void *data)
+static int textureData(wNativeHandle tex, int x, int y, int w, int h, int fmt, const void *data)
 {
-	glTextureSubImage2D(tex, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	GLenum glfmt;
+	switch (fmt) {
+		case W_IMAGE_GRAYSCALE8:
+			glfmt = GL_RED;
+			break;
+		case W_IMAGE_RGBA8:
+			glfmt = GL_RGBA;
+			break;
+		case W_IMAGE_RGB8:
+			glfmt = GL_RGB;
+			break;
+	}
+
+	glTextureSubImage2D(tex, 0, x, y, w, h, glfmt, GL_UNSIGNED_BYTE, data);
 	CHECK_ERROR();
 	return W_SUCCESS;
 }

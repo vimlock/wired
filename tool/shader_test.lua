@@ -34,8 +34,12 @@ void main()
 
 shader:Compile()
 
+font = Font()
+font:Load("font.ttf")
+
 painter = Painter()
 painter:SetShader(shader)
+painter:SetFont(font)
 
 img = Image()
 img:Load("test.png")
@@ -47,12 +51,11 @@ vbox = canvas:AddChild(GuiVBox())
 btn1 = vbox:AddChild(GuiButton())
 btn2 = vbox:AddChild(GuiButton())
 btn3 = vbox:AddChild(GuiButton())
-btn4 = vbox:AddChild(GuiButton())
+btn4 = vbox:AddChild(GuiLabel())
 
 btn1:SetImage(img)
 btn2:SetImage(img)
 btn3:SetImage(img)
-btn4:SetImage(img)
 
 function update()
 	painter:Clear(Color(0.1, 0.1, 0.1, 1))

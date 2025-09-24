@@ -5,6 +5,7 @@ add_library(Wired SHARED
 	wError.c
 	wEvent.c
 	wFile.c
+	wFont.c
 	wGui.c
 	wGuiButton.c
 	wGuiCanvas.c
@@ -32,6 +33,7 @@ add_library(Wired SHARED
 
 	wWrapBuffer.c
 	wWrapFile.c
+	wWrapFont.c
 	wWrapGui.c
 	wWrapImage.c
 	wWrapLog.c
@@ -46,11 +48,13 @@ add_library(Wired SHARED
 
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(Freetype REQUIRED)
 
 target_link_libraries(Wired PUBLIC lua5.4)
 target_link_libraries(Wired PUBLIC SDL2::SDL2)
 target_link_libraries(Wired PUBLIC OpenGL::GL)
 target_link_libraries(Wired PUBLIC png)
+target_link_libraries(Wired PUBLIC Freetype::Freetype)
 
 add_executable(WiredEngine
 	wMain.c

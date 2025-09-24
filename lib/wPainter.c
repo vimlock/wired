@@ -1,5 +1,6 @@
 #include "../include/wired/wPainter.h"
 #include "../include/wired/wClass.h"
+#include "../include/wired/wFont.h"
 #include "../include/wired/wShader.h"
 #include "../include/wired/wImage.h"
 #include "../include/wired/wTexture.h"
@@ -57,6 +58,7 @@ struct _wPainter
 	wNativeHandle emptyTex;
 
 	wShader *shader;
+	wFont *font;
 
 	int uniformColor;
 	int uniformMvp;
@@ -247,8 +249,7 @@ int wPainterInit(wPainter *painter)
 		0xFFFFFFFF,
 	};
 
-	painter->platform->textureData(painter->emptyTex, 1, 1, emptyData);
-
+	painter->platform->textureData(painter->emptyTex, 0, 0, 1, 1, W_IMAGE_RGBA8, emptyData);
 
 	return W_SUCCESS;
 }
@@ -271,7 +272,13 @@ void wPainterFree(wPainter *painter)
 	painter->stack = NULL;
 }
 
-int wPainterSetShader(wPainter *painter, wShader *shader)
+void wPainterSetFont(wPainter *painter, wFont *font)
+{
+	wAssert(painter != NULL);
+	painter->font = font;
+}
+
+void wPainterSetShader(wPainter *painter, wShader *shader)
 {
 	wAssert(painter != NULL);
 
@@ -284,8 +291,6 @@ int wPainterSetShader(wPainter *painter, wShader *shader)
 			wLogWarn("uMvp not used? how does shader know where to draw");
 		}
 	}
-
-	return W_SUCCESS;
 }
 
 void wPainterDrawRect(wPainter *painter, wRect rect)
@@ -304,10 +309,17 @@ void wPainterDrawFilledRect(wPainter *painter, const wRect rect)
 	drawRect(painter, rect);
 }
 
-void wPainterDrawText(wPainter *painter, const wRect *rect, const wString *str)
+void wPainterDrawText(wPainter *painter, const wRect rect, const wString *str)
 {
 	wAssert(painter != NULL);
 	wAssert(str != NULL);
+
+	if (!painter->font) {
+		wLogWarn("No font set");
+		return;
+	}
+
+	wFontRender(painter->font, str);
 }
 
 void wPainterDrawImage(wPainter *painter, wRect rect, wImage *img)

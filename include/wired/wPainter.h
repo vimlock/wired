@@ -5,19 +5,21 @@
 
 typedef struct _wPainter wPainter;
 typedef struct _wShader wShader;
+typedef struct _wFont wFont;
 typedef struct _wImage wImage;
 typedef struct _wTexture wTexture;
 
 wPainter *wPainterAlloc();
 int wPainterInit(wPainter *painter);
 
-int wPainterSetShader(wPainter *painter, wShader *shader);
+void wPainterSetFont(wPainter *painter, wFont *font);
+void wPainterSetShader(wPainter *painter, wShader *shader);
 
 void wPainterFree(wPainter *painter);
 void wPainterClear(wPainter *painter, wColor col);
 void wPainterDrawRect(wPainter *painter, wRect rect);
 void wPainterDrawFilledRect(wPainter *painter, wRect rect);
-void wPainterDrawText(wPainter *painter, const wRect *rect, const wString *str);
+void wPainterDrawText(wPainter *painter, const wRect rect, const wString *str);
 void wPainterDrawImage(wPainter *painter, wRect rect, wImage *img);
 void wPainterDrawTexture(wPainter *painter, wRect rect, wTexture *tex);
 void wPainterSetColor(wPainter *painter, wColor col);

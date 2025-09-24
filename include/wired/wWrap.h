@@ -17,6 +17,7 @@ extern "C" {
 #include <lua5.4/lauxlib.h>
 
 typedef struct _wClass wClass;
+typedef struct _wFont wFont;
 
 typedef struct _wlEnum wlEnum;
 struct _wlEnum
@@ -63,6 +64,9 @@ void wlPushPainter(lua_State *L, wPainter *painter);
 wSpriteAnim *wlCheckSpriteAnim(lua_State *L, int index);
 void wlPushSpriteAnim(lua_State *L, wSpriteAnim *anim);
 
+wFont *wlCheckFont(lua_State *L, int index);
+void wlPushFont(lua_State *L, wFont *font);
+
 void wlDumpStack();
 
 void wlRegisterFunc(lua_State *L, const char *name, lua_CFunction func);
@@ -71,6 +75,7 @@ void wlRegisterDerivedType(lua_State *L, const char *name, const char *base, con
 void wlRegisterEnum(lua_State *L, const char *name, const  wlEnum *e);
 
 void wlRegisterFile(lua_State *L);
+void wlRegisterFont(lua_State *L);
 void wlRegisterGui(lua_State *L);
 void wlRegisterGuiButton(lua_State *L);
 void wlRegisterImage(lua_State *L);

@@ -100,7 +100,7 @@ const char *wStringData(const wString *str)
 	return str->data;
 }
 
-size_t wStringSize(wString *str)
+size_t wStringSize(const wString *str)
 {
 	wAssert(str != NULL);
 	return str->size;

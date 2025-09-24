@@ -105,9 +105,15 @@ static int wlPainterSetShader(lua_State *L)
 {
 	wPainter *self = wlCheckPainter(L, 1);
 	wShader *shader = wlCheckShader(L, 2);
-
 	wPainterSetShader(self, shader);
+	return 0;
+}
 
+static int wlPainterSetFont(lua_State *L)
+{
+	wPainter *self = wlCheckPainter(L, 1);
+	wFont *font = wlCheckFont(L, 2);
+	wPainterSetFont(self, font);
 	return 0;
 }
 
@@ -158,6 +164,7 @@ static luaL_Reg wlPainter[] = {
 	{ "PopState",    wlPainterPopState },
 	{ "Translate",   wlPainterTranslate },
 	{ "SetShader",   wlPainterSetShader },
+	{ "SetFont",     wlPainterSetFont },
 	{ "SetColor",    wlPainterSetColor },
 	{ "SetViewport", wlPainterSetViewport },
 	{ "SetScissor",  wlPainterSetScissor },
