@@ -50,6 +50,7 @@ wGuiNode *wGuiSlider()
 {
 	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiSliderPriv));
 	ret->class = &wGuiSliderClass;
+	ret->clickable = true;
 	ret->paint = wGuiSlider_paint;
 	ret->free = wGuiSlider_free;
 	ret->mousePress   = wGuiSlider_mousePress;

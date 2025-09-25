@@ -27,8 +27,8 @@ struct _wGuiNode
 
 	bool visible;
 	bool enabled;
-
 	bool hovered;
+	bool clickable;
 
 	wRect rect;
 

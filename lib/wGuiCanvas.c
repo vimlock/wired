@@ -61,10 +61,10 @@ static wGuiNode * pickRecurse(wGuiNode *node, int x, int y)
 		wGuiNode *nested = pickRecurse(child, x, y);
 		if (nested)
 			return nested;
-
-		if (wGuiNodeContainsPoint(child, x, y))
-			return child;
 	}
+
+	if (node->clickable && wGuiNodeContainsPoint(node, x, y))
+		return node;
 
 	return NULL;
 }

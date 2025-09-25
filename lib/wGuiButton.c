@@ -75,6 +75,7 @@ wGuiNode *wGuiButton()
 	wGuiNode *ret = wGuiNodeAlloc(sizeof(wGuiButtonPriv));
 	ret->class = &wGuiButtonClass;
 	ret->paint = wGuiButton_paint;
+	ret->clickable = true;
 	ret->layout = wGuiButton_layout;
 	ret->mousePress = wGuiButton_mousePress;
 	ret->keyboardEvent = wGuiButton_keyboardEvent;
