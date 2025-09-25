@@ -13,6 +13,8 @@ wPainter *wPainterAlloc();
 int wPainterInit(wPainter *painter);
 
 void wPainterSetFont(wPainter *painter, wFont *font);
+wFont *wPainterGetFont(wPainter *painter);
+
 void wPainterSetShader(wPainter *painter, wShader *shader);
 
 void wPainterFree(wPainter *painter);

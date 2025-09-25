@@ -2,6 +2,7 @@
 #include "../include/wired/wClass.h"
 #include "../include/wired/wPainter.h"
 #include "../include/wired/wAssert.h"
+#include "../include/wired/wFont.h"
 
 static const wClass wGuiLabelClass =
 {
@@ -24,8 +25,20 @@ static void wGuiLabel_paint(wGuiNode *self, wPainter *painter)
 	if (!priv->text || wStringSize(priv->text) == 0)
 		return;
 
+	wFont *font = wPainterGetFont(painter);
+	wRect textRect = wFontGetRect(font, priv->text);
+
+	wRect rect = wGuiNodeGetGeometry(self);
+	float mx = (rect.w - textRect.w) * 0.5f;
+	float my = (rect.h - textRect.h) * 0.5f;
+
+	rect.x += mx;
+	rect.y += my;
+	rect.w -= mx;
+	rect.h -= my;
+
 	wPainterSetColor(painter, priv->color);
-	wPainterDrawText(painter, wGuiNodeGetGeometry(self), priv->text);
+	wPainterDrawText(painter, rect, priv->text);
 }
 
 static void wGuiLabel_free(wGuiNode *self)
@@ -47,4 +60,12 @@ wGuiNode *wGuiLabel()
 	priv->color = (wColor){ 0, 0, 0, 1 };
 
 	return ret;
+}
+
+void wGuiLabelSetText(wGuiNode *self, wString *str)
+{
+	wAssert(self != NULL);
+
+	wGuiLabelPriv *priv = self->priv;
+	wStringAssign(priv->text, str);
 }

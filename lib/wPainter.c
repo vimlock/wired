@@ -154,16 +154,8 @@ static void setSlicedRectMesh(wPainter *painter, wRect rect)
 	platform->bufferData(painter->ibo, sizeof(indices),  indices);
 }
 
-static void drawRect(wPainter *painter, wRect rect)
+static void setShader(wPainter *painter)
 {
-	if (!painter->shader) {
-		wLogWarn("No shader set for painter");
-		return;
-	}
-
-	setRectMesh(painter, rect);
-	// setSlicedRectMesh(painter, rect);
-
 	wNativeHandle shader = wShaderGetNativeHandle(painter->shader);
 
 	wPlatformOps *platform = painter->platform;
@@ -175,6 +167,20 @@ static void drawRect(wPainter *painter, wRect rect)
 
 	platform->shaderSetValue(shader, painter->uniformMvp, W_SHADER_MAT4, &painter->state->mvpMat);
 	platform->shaderSetValue(shader, painter->uniformColor, W_SHADER_VEC4, &painter->state->color);
+}
+
+static void drawRect(wPainter *painter, wRect rect)
+{
+	if (!painter->shader) {
+		wLogWarn("No shader set for painter");
+		return;
+	}
+
+	wPlatformOps *platform = painter->platform;
+
+	setRectMesh(painter, rect);
+	// setSlicedRectMesh(painter, rect);
+	setShader(painter);
 
 	// platform->draw(54, painter->vbo, painter->ibo);
 	platform->draw(6, painter->vbo, painter->ibo);
@@ -276,6 +282,12 @@ void wPainterSetFont(wPainter *painter, wFont *font)
 {
 	wAssert(painter != NULL);
 	painter->font = font;
+}
+
+wFont *wPainterGetFont(wPainter *painter)
+{
+	wAssert(painter != NULL);
+	return painter->font;
 }
 
 void wPainterSetShader(wPainter *painter, wShader *shader)

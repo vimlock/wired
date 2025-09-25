@@ -287,10 +287,10 @@ static wNativeHandle textureCreate(int w, int h, int fmt)
 
 	if (fmt == W_IMAGE_GRAYSCALE8) {
 		GLint mask[] = {
-			GL_RED,
-			GL_RED,
-			GL_RED,
-			GL_ONE
+			GL_ONE,
+			GL_ONE,
+			GL_ONE,
+			GL_RED
 		};
 
 		glTextureParameteriv(id, GL_TEXTURE_SWIZZLE_RGBA, mask);
@@ -446,6 +446,16 @@ static int draw(int numElements, wNativeHandle vbo, wNativeHandle ibo)
 	return W_SUCCESS;
 }
 
+static int setBlend(int enabled)
+{
+	if (enabled)
+		glEnable(GL_BLEND);
+	else
+		glDisable(GL_BLEND);
+
+	return W_SUCCESS;
+}
+
 static void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const *message, void const* userdata)
 {
 	switch (severity) {
@@ -503,6 +513,7 @@ int wGlInit(wPlatformOps *p)
 
 	p->setViewport = setViewport;
 	p->setScissor = setScissor;
+	p->setBlend = setBlend;
 	p->clear = clear;
 	p->draw = draw;
 

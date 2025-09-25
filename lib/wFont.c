@@ -254,7 +254,7 @@ void wFontRender(wFont *font, const wString *text, wRect r)
 		wFontGlyph *glyph = wFontFindGlyph(font, ch);
 		if (!glyph) {
 			wLogWarn("Glyph not found for '%c'", ch);
-			return;
+			continue;
 		}
 
 		float xpos = x + glyph->bearingX;
@@ -294,4 +294,29 @@ void wFontRender(wFont *font, const wString *text, wRect r)
 	platform->bufferData(font->ibo, sizeof(wIndex) * numGlyphs * 6, font->indexBuf);
 
 	platform->draw(numGlyphs * 6, font->vbo, font->ibo);
+}
+
+wRect wFontGetRect(wFont *font, const wString *text)
+{
+	wRect ret = {0, 0, 0, FONT_SIZE};
+	wFontGlyph *last = NULL;
+
+	for (unsigned i = 0; i < wStringSize(text); ++i) {
+		char ch = *(wStringData(text) + i);
+		wFontGlyph *glyph = wFontFindGlyph(font, ch);
+		if (!glyph) {
+			wLogWarn("Glyph not found for '%c'", ch);
+			continue;
+		}
+
+		ret.w += glyph->advance;
+		last = glyph;
+	}
+
+	if (last) {
+		ret.w -= last->advance;
+		ret.w += last->bearingX + last->width;
+	}
+
+	return ret;
 }

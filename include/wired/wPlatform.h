@@ -57,6 +57,7 @@ typedef struct _wPlatformOps
 
 	int (*setScissor)(int x, int y, int w, int h);
 	int (*setViewport)(int x, int y, int w, int h);
+	int (*setBlend)(int enabled);
 } wPlatformOps;
 
 int wPlatformInit();
