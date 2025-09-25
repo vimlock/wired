@@ -124,7 +124,6 @@ static size_t wFile_size(void *opaque)
 wFile *wFileAlloc()
 {
 	wFile *ret = wMemAlloc(sizeof(wFile));
-	memset(ret, 0x0, sizeof(wFile));
 	return ret;
 }
 

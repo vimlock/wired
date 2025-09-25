@@ -4,8 +4,6 @@
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wMemory.h"
 
-#include <string.h>
-
 const wClass wGuiStyleClass =
 {
 	.name = "GuiStyle",
@@ -72,7 +70,6 @@ wGuiNode *wGuiNodeAlloc(int privSize)
 	wGuiNode *ret;
 
 	ret = wMemAlloc(sizeof(wGuiNode) + privSize);
-	memset(ret, 0x0, sizeof(wGuiNode) + privSize);
 	ret->class = &wGuiNodeClass;
 	ret->numChildren = 0;
 	ret->visible = true;

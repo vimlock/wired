@@ -7,6 +7,8 @@
  * 
  * This will never return NULL. If the allocation fails calls
  * wPanic()
+ *
+ * The returned memory will be zero initialized.
  * 
  * @param size Number of bytes to allocate. Can be 0 and a valid unique pointer
  * will be returned.

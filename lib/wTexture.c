@@ -39,7 +39,6 @@ static void release(wTexture *tex)
 wTexture *wTextureAlloc()
 {
 	wTexture *tex = wMemAlloc(sizeof(wTexture));
-	memset(tex, 0x0, sizeof(wTexture));
 
 	tex->class = &wTextureClass;
 	tex->handle = 0;

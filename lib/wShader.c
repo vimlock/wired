@@ -31,7 +31,6 @@ wShader *wShaderAlloc()
 	wShader *ret;
 
 	ret = wMemAlloc(sizeof(wShader));
-	memset(ret, 0x0, sizeof(wShader));
 	ret->class = &wShaderClass;
 	ret->vertSource = wStringAlloc();
 	ret->fragSource = wStringAlloc();

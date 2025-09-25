@@ -2,6 +2,7 @@
 #include "../include/wired/wError.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 void *wMemAlloc(size_t size)
 {
@@ -11,6 +12,8 @@ void *wMemAlloc(size_t size)
 	void *ret = malloc(size);
 	if (!ret)
 		wPanic("Out of memory");
+
+	memset(ret, 0x0, size);
 
 	return ret;
 }

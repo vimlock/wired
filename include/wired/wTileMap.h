@@ -2,7 +2,12 @@
 
 #include <stdint.h>
 
-#include "wMath.h"
+typedef struct _wTileData wTileData;
+typedef struct _wTileSheet wTileSheet;
+typedef struct _wTileLayer wTileLayer;
+typedef struct _wTileMap wTileMap;
+typedef struct _wPainter wPainter;
+typedef struct _wRect wRect;
 
 enum wTileFlags
 {
@@ -11,28 +16,18 @@ enum wTileFlags
 	W_TILE_FLAG_FlIP_Y = 1 << 1,
 };
 
-typedef struct _wTileData
-{
-	uint16_t index;
-	uint8_t flags;
-	uint8_t padding;
-} wTileData;
+typedef uint16_t wTileIndex;
 
-typedef struct _wTileSheet
-{
-	wRect *tiles;
-	unsigned numTiles;
-} wTileSheet;
+wTileMap *wTileMapAlloc();
+void wTileMapFree(wTileMap *map);
+void wTileMapDraw(wTileMap *map);
 
-typedef struct _wTileLayer
-{
-	wTileData *tiles;
-	unsigned width;
-	unsigned height;
-} wTileLayer;
-
-typedef struct _wTileMap
-{
-	wTileLayer *layers;
-	unsigned numLayers;
-} wTileMap;
+wTileLayer *wTileLayerAlloc(int width, int height);
+void wTileLayerFree(wTileLayer *layer);
+void wTileLayerLoadRegion(wTileLayer *layer, int x, int y, int w, int h);
+void wTileLayerDraw(wTileLayer *layer, wPainter *painter);
+void wTileLayerSetTileFlags(wTileLayer *layer, int x, int y, unsigned flags);
+void wTileLayerSetTile(wTileLayer *layer, int x, int y, wTileIndex index);
+void wTileLayerFill(wTileLayer *layer, int x, int y, int w, int h, wTileIndex index);
+wTileIndex wTileLayerGetTile(wTileLayer *layer, int x, int y);
+void wTileLayerSetSheet(wTileLayer *layer, int count, const wRect *rects);

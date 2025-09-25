@@ -40,11 +40,18 @@ font:Load("font.ttf")
 painter = Painter()
 painter:SetShader(shader)
 painter:SetFont(font)
-
-img = Image()
-img:Load("test.png")
+painter:SetViewport(0, 0, 800, 600)
 
 canvas = GuiCanvas()
+layer = TileLayer(256, 256)
+layer:SetSheet({Rect(0, 0, 32, 32), Rect(0, 0, 32, 32)})
+
+layer:SetTile(0, 0, 1)
+layer:SetTile(1, 0, 1)
+layer:SetTile(2, 0, 1)
+layer:SetTile(3, 0, 1)
+layer:SetTile(3, 5, 1)
+layer:LoadRegion(0, 0, 32, 32)
 
 vbox = canvas:AddChild(GuiVBox())
 
@@ -55,16 +62,18 @@ btn = vbox:AddChild(GuiButton())
 btn:SetText("Label")
 btn = vbox:AddChild(GuiButton())
 btn:SetText("Label")
-
---lbl = vbox:AddChild(GuiLabel())
---lbl:SetText("!")
-
--- btn1:SetImage(img)
+btn = vbox:AddChild(GuiButton())
+btn:SetText("Label")
+btn = vbox:AddChild(GuiButton())
+btn:SetText("Label")
 
 function update()
 	painter:Clear(Color(0.1, 0.1, 0.1, 1))
 	painter:SetColor(Color(1, 1, 1, 1))
-	canvas:Paint(painter)
+
+	layer:Draw(painter)
+
+	-- canvas:Paint(painter)
 end
 
 function MousePress(x, y, button)

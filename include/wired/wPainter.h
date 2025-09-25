@@ -37,3 +37,5 @@ void wPainterPushState(wPainter *painter);
 void wPainterPopState(wPainter *painter);
 void wPainterSetOrtho(wPainter *painter, float left, float right, float bottom, float top, float near, float far);
 void wPainterTranslate(wPainter *painter, float x, float y, float z);
+
+void wPainterBindShader(wPainter *painter);

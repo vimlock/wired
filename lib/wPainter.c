@@ -160,7 +160,7 @@ static void setSlicedRectMesh(wPainter *painter, wRect rect, wRect uvRect)
 	platform->bufferData(painter->ibo, sizeof(indices),  indices);
 }
 
-static void setShader(wPainter *painter)
+void wPainterBindShader(wPainter *painter)
 {
 	wNativeHandle shader = wShaderGetNativeHandle(painter->shader);
 
@@ -185,7 +185,7 @@ static void drawRect(wPainter *painter, wRect rect)
 	wPlatformOps *platform = painter->platform;
 
 	setRectMesh(painter, rect);
-	setShader(painter);
+	wPainterBindShader(painter);
 
 	platform->draw(6, painter->vbo, painter->ibo);
 }
@@ -222,10 +222,7 @@ wPainter *wPainterAlloc()
 	wPainter *ret;
 
 	ret = wMemAlloc(sizeof(wPainter));
-	memset(ret, 0x0, sizeof(wPainter));
-
 	ret->class = &wPainterClass;
-
 	return ret;
 }
 
@@ -379,7 +376,7 @@ void wPainterDrawSlicedRect(wPainter *painter, wRect rect)
 	wPlatformOps *platform = painter->platform;
 
 	setSlicedRectMesh(painter, rect, (wRect){ 0.5, 0.5, 0.5, 0.5});
-	setShader(painter);
+	wPainterBindShader(painter);
 	setTexture(painter, painter->roundedTex, 0);
 	platform->draw(54, painter->vbo, painter->ibo);
 }
@@ -391,7 +388,7 @@ void wPainterDrawBorderRect(wPainter *painter, wRect rect)
 	wPlatformOps *platform = painter->platform;
 
 	setSlicedRectMesh(painter, rect, (wRect){ 0.5, 0.5, 0.5, 0.5});
-	setShader(painter);
+	wPainterBindShader(painter);
 	setTexture(painter, painter->borderTex, 0);
 	platform->draw(54, painter->vbo, painter->ibo);
 }
@@ -406,7 +403,7 @@ void wPainterDrawText(wPainter *painter, wRect rect, const wString *str)
 		return;
 	}
 	
-	setShader(painter);
+	wPainterBindShader(painter);
 	setTexture(painter, painter->emptyTex, 0);
 	wFontRender(painter->font, str, rect);
 }

@@ -114,7 +114,6 @@ static wFontGlyph *wFontFindGlyph(wFont *font, unsigned long code)
 wFont *wFontAlloc()
 {
 	wFont *ret = wMemAlloc(sizeof(wFont));
-	memset(ret, 0x0, sizeof(wFont));
 	ret->platform = wPlatform;
 	ret->glyphs = wMemAlloc((ATLAS_W / GLYPH_W) * (ATLAS_H / GLYPH_H) *sizeof(wFontGlyph));
 	ret->numGlyphs = 0;

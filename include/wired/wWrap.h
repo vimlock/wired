@@ -86,6 +86,7 @@ void wlRegisterShader(lua_State *L);
 void wlRegisterSpriteAnim(lua_State *L);
 void wlRegisterTexture(lua_State *L);
 void wlRegisterWindow(lua_State *L);
+void wlRegisterTileLayer(lua_State *L);
 
 int wlCheckMethod(lua_State *L);
 void *wlCheckClass(lua_State *L, int index, const char *name);

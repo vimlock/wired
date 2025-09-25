@@ -29,6 +29,7 @@ add_library(Wired SHARED
 	wSprite.c
 	wString.c
 	wTexture.c
+	wTileMap.c
 	wWindow.c
 
 	wWrapBuffer.c
@@ -43,6 +44,7 @@ add_library(Wired SHARED
 	wWrapSprite.c
 	wWrapString.c
 	wWrapTexture.c
+	wWrapTileMap.c
 	wWrapWindow.c
 )
 

@@ -39,7 +39,6 @@ int wImagePixelSize(int format)
 wImage *wImageAlloc()
 {
 	wImage *ret = wMemAlloc(sizeof(wImage));
-	memset(ret, 0x0, sizeof(wImage));
 
 	ret->width = 0;
 	ret->height = 0;

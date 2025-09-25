@@ -21,7 +21,6 @@ int wPlatformInit()
 	int err;
 
 	wPlatform = wMemAlloc(sizeof(wPlatformOps));
-	memset(wPlatform, 0x0, sizeof(wPlatformOps));
 
 	err = wSdlInit(wPlatform);
 	if (err) {
