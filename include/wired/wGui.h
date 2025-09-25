@@ -14,12 +14,36 @@ typedef struct _wPainter wPainter;
 typedef struct _wString wString;
 typedef struct _wGuiNode wGuiNode;
 typedef struct _wClass wClass;
+typedef struct _wGuiStyle wGuiStyle;
 
-typedef struct _wGuiStyle
+typedef struct _wGuiButtonStyle
 {
-	int sliderGutterSize;
-	int sliderHandleSize;
-} wGuiStyle;
+	wColor textColor;
+	wColor backgroundColor;
+	wColor borderColor;
+	float margin;
+} wGuiButtonStyle;
+
+typedef struct _wGuiLabelStyle
+{
+	wColor textColor;
+	float margin;
+} wGuiLabelStyle;
+
+struct _wGuiStyle
+{
+	const wClass *class;
+
+	float sliderGutterSize;
+	float sliderHandleSize;
+
+	wGuiButtonStyle button;
+	wGuiButtonStyle buttonPressed;
+	wGuiButtonStyle buttonHover;
+	wGuiButtonStyle buttonDisabled;
+
+	wGuiLabelStyle label;
+};
 
 struct _wGuiNode
 {
@@ -81,10 +105,10 @@ int wGuiImageSetImage(wGuiNode *node, wImage *img);
 
 wGuiNode *wGuiButton();
 void wGuiButtonSetImage(wGuiNode *node, wImage *img);
+void wGuiButtonSetText(wGuiNode *self, const wString *text);
 
 wGuiNode *wGuiLabel();
 void wGuiLabelSetText(wGuiNode *node, const wString *str);
-void wGuiLabelSetColor(wGuiNode *node, wColor col);
 
 wGuiNode *wGuiVBox();
 

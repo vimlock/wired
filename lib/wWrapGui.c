@@ -171,7 +171,15 @@ static int wlGuiButtonSetImage(lua_State *L)
 	wImage *img = wlCheckImage(L, 2);
 	wGuiButtonSetImage(node, img);
 	return 0;
-}	
+}
+
+static int wlGuiButtonSetText(lua_State *L)
+{
+	wGuiNode *node = wlCheckGuiButton(L, 1);
+	wString text; wlCheckString(L, 2, &text);
+	wGuiButtonSetText(node, &text);
+	return 0;
+}
 
 static int wlGuiButtonGetImage(lua_State *L)
 {
@@ -210,14 +218,6 @@ static int wlGuiLabelSetText(lua_State *L)
 	wGuiNode *self = wlCheckGuiLabel(L, 1);
 	wString text; wlCheckString(L, 2, &text);
 	wGuiLabelSetText(self, &text);
-	return 0;
-}
-
-static int wlGuiLabelSetColor(lua_State *L)
-{
-	wGuiNode *self = wlCheckGuiLabel(L, 1);
-	wColor *col = wlCheckColor(L, 2);
-	wGuiLabelSetColor(self, *col);
 	return 0;
 }
 
@@ -299,6 +299,7 @@ static luaL_Reg wlGuiButton[] = {
 	{ "__new",    wlGuiButton__new },
 	{ "SetImage", wlGuiButtonSetImage },
 	{ "GetImage", wlGuiButtonGetImage },
+	{ "SetText", wlGuiButtonSetText },
 	{ NULL, NULL }
 };
 
@@ -310,7 +311,6 @@ static luaL_Reg wlGuiImage[] = {
 static luaL_Reg wlGuiLabel[] = {
 	{ "__new", wlGuiLabel__new },
 	{ "SetText", wlGuiLabelSetText },
-	{ "SetColor", wlGuiLabelSetColor },
 	{ NULL, NULL }
 };
 

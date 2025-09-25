@@ -11,6 +11,7 @@
 #include "../include/wired/wError.h"
 
 #include <string.h>
+#include <math.h>
 
 #define W_PAINTER_MAX_STACK 32
 
@@ -34,6 +35,8 @@ typedef struct _wPainterState
 	wMat4 mvpMat;
 
 	wColor color;
+	float borderWidth;
+	float borderRadius;
 
 	unsigned dirty;
 } wPainterState;
@@ -56,6 +59,9 @@ struct _wPainter
 	wNativeHandle ibo;
 
 	wNativeHandle emptyTex;
+
+	wNativeHandle roundedTex;
+	wNativeHandle borderTex;
 
 	wShader *shader;
 	wFont *font;
@@ -84,17 +90,17 @@ static void setRectMesh(wPainter *painter, wRect rect)
 	platform->bufferData(painter->ibo, sizeof(indices),  indices);
 }
 
-static void setSlicedRectMesh(wPainter *painter, wRect rect)
+static void setSlicedRectMesh(wPainter *painter, wRect rect, wRect uvRect)
 {
-	float tw = 256.0f;
-	float th = 256.0f;
+	float le = 16.0f;
+	float re = 16.0f;
+	float te = 16.0f;
+	float be = 16.0f;
 
-	float le = 64.0f;
-	float re = 64.0f;
-	float te = 64.0f;
-	float be = 64.0f;
-
-	float border = 32.0f;
+	float bl = 0.5f;
+	float br = 0.5f;
+	float bt = 0.5f;
+	float bb = 0.5f;
 
 	float x0 = rect.x;
 	float x1 = rect.x + le;
@@ -107,13 +113,13 @@ static void setSlicedRectMesh(wPainter *painter, wRect rect)
 	float y3 = rect.y + rect.h;
 
 	float u0 = 0.0f;
-	float u1 = border / tw;
-	float u2 = 1.0f - (border / tw);
+	float u1 = bl;
+	float u2 = 1.0f - br;
 	float u3 = 1.0f;
 
 	float v0 = 0.0f;
-	float v1 = border / tw;
-	float v2 = 1.0f - (border / th);
+	float v1 = bt;
+	float v2 = 1.0f - bb;
 	float v3 = 1.0f;
 
 	float xcoords[4] = { x0, x1, x2, x3 };
@@ -121,20 +127,20 @@ static void setSlicedRectMesh(wPainter *painter, wRect rect)
 	float ucoords[4] = { u0, u1, u2, u3 };
 	float vcoords[4] = { v0, v1, v2, v3 };
 
-	float vertices[16 * 5];
+	wVertex vertices[16];
 
 	for (int i = 0; i < 4; ++i) {
 		for (int k = 0; k < 4; ++k)  {
-			int idx = (i * 4 + k) * 5;
-			vertices[idx + 0] = xcoords[k];
-			vertices[idx + 1] = ycoords[i];
-			vertices[idx + 2] = 0.0f;
-			vertices[idx + 3] = ucoords[k];
-			vertices[idx + 4] = vcoords[i];
+			int idx = (i * 4 + k);
+			vertices[idx].posX = xcoords[k];
+			vertices[idx].posY = ycoords[i];
+			vertices[idx].posZ = 0.0f;
+			vertices[idx].texX = ucoords[k];
+			vertices[idx].texY = vcoords[i];
 		}
 	}
 
-	uint16_t indices[] = {
+	wIndex indices[] = {
 		0,1,4,4,1,5,
 		1,2,5,5,2,6,
 		2,3,6,6,3,7,
@@ -144,7 +150,7 @@ static void setSlicedRectMesh(wPainter *painter, wRect rect)
 		6,7,10,10,7,11,
 
 		8,9,12,12,9,13,
-		9,10,12,12,10,14,
+		9,10,13,13,10,14,
 		10,11,14,14,11,15
 	};
 
@@ -179,14 +185,12 @@ static void drawRect(wPainter *painter, wRect rect)
 	wPlatformOps *platform = painter->platform;
 
 	setRectMesh(painter, rect);
-	// setSlicedRectMesh(painter, rect);
 	setShader(painter);
 
-	// platform->draw(54, painter->vbo, painter->ibo);
 	platform->draw(6, painter->vbo, painter->ibo);
 }
 
-static void bindTexture(wPainter *painter, wNativeHandle tex, int index)
+static void setTexture(wPainter *painter, wNativeHandle tex, int index)
 {
 	painter->platform->textureBind(tex, index);
 }
@@ -237,6 +241,8 @@ int wPainterInit(wPainter *painter)
 
 	painter->platform = wPlatform;
 
+	wPlatformOps *platform = painter->platform;
+
 	painter->stack = wMemAlloc(sizeof(wPainterState) * W_PAINTER_MAX_STACK);
 	memset(painter->stack, 0x0, sizeof(wPainterState)  * W_PAINTER_MAX_STACK);
 
@@ -246,16 +252,69 @@ int wPainterInit(wPainter *painter)
 	wMat4Identity(&painter->state->viewMat);
 	wMat4Identity(&painter->state->mvpMat);
 
-	painter->vbo = painter->platform->bufferCreate(sizeof(float) * 16 * 5, NULL);
-	painter->ibo = painter->platform->bufferCreate(sizeof(uint16_t) * 54, NULL);
+	painter->vbo = platform->bufferCreate(sizeof(float) * 16 * 5, NULL);
+	painter->ibo = platform->bufferCreate(sizeof(uint16_t) * 54, NULL);
 
-	painter->emptyTex = painter->platform->textureCreate(1, 1, W_IMAGE_RGBA8);
+	painter->emptyTex = platform->textureCreate(1, 1, W_IMAGE_RGBA8);
 
 	uint32_t emptyData[] = {
 		0xFFFFFFFF,
 	};
 
-	painter->platform->textureData(painter->emptyTex, 0, 0, 1, 1, W_IMAGE_RGBA8, emptyData);
+	platform->textureData(painter->emptyTex, 0, 0, 1, 1, W_IMAGE_RGBA8, emptyData);
+
+	int sz = 32;
+	uint8_t *tex = wMemAlloc(sz * sz);
+	memset(tex, 0x0, sz*sz);
+
+
+	float cx = (sz - 1) / 2.0f;
+	float cy = (sz - 1) / 2.0f;
+
+	float r = (sz / 2.0f) - 1.0f;
+
+	float width = 4.0f;
+	float ir = r - width;
+
+	for (int y = 0; y < sz; ++y) {
+		for (int x = 0; x < sz; ++x) {
+			float dx = x - cx;
+			float dy = y - cy;
+
+			if (dx*dx + dy*dy <= r*r)
+				tex[y * sz + x] = 255;
+		}
+	}
+
+	painter->roundedTex = platform->textureCreate(sz, sz, W_IMAGE_GRAYSCALE8);
+	platform->textureData(painter->roundedTex, 0, 0, sz, sz, W_IMAGE_GRAYSCALE8, tex);
+
+	memset(tex, 0x0, sz*sz);
+	for (int y = 0; y < sz; ++y) {
+		for (int x = 0; x < sz; ++x) {
+			float dx = x - cx;
+			float dy = y - cy;
+
+			float sqr = dx*dx + dy*dy;
+			float d = sqrtf(dx*dx + dy*dy);
+
+			if (d <= r && d > ir) {
+				float douter = fabs(d - r);
+				float dinner = fabs(d - ir);
+				float delta = fminf(douter, dinner);
+
+				if (delta <= 1.0f)
+					tex[y*sz+x] = delta * 255; 
+				else 
+					tex[y*sz+x] = 255;
+			}
+		}
+	}
+
+	painter->borderTex = platform->textureCreate(sz, sz, W_IMAGE_GRAYSCALE8);
+	platform->textureData(painter->borderTex, 0, 0, sz, sz, W_IMAGE_GRAYSCALE8, tex);
+
+	wMemFree(tex);
 
 	return W_SUCCESS;
 }
@@ -309,16 +368,32 @@ void wPainterDrawRect(wPainter *painter, wRect rect)
 {
 	wAssert(painter != NULL);
 
-	bindTexture(painter, painter->emptyTex, 0);
+	setTexture(painter, painter->emptyTex, 0);
 	drawRect(painter, rect);
 }
 
-void wPainterDrawFilledRect(wPainter *painter, const wRect rect)
+void wPainterDrawSlicedRect(wPainter *painter, wRect rect)
 {
 	wAssert(painter != NULL);
 
-	bindTexture(painter, painter->emptyTex, 0);
-	drawRect(painter, rect);
+	wPlatformOps *platform = painter->platform;
+
+	setSlicedRectMesh(painter, rect, (wRect){ 0.5, 0.5, 0.5, 0.5});
+	setShader(painter);
+	setTexture(painter, painter->roundedTex, 0);
+	platform->draw(54, painter->vbo, painter->ibo);
+}
+
+void wPainterDrawBorderRect(wPainter *painter, wRect rect)
+{
+	wAssert(painter != NULL);
+
+	wPlatformOps *platform = painter->platform;
+
+	setSlicedRectMesh(painter, rect, (wRect){ 0.5, 0.5, 0.5, 0.5});
+	setShader(painter);
+	setTexture(painter, painter->borderTex, 0);
+	platform->draw(54, painter->vbo, painter->ibo);
 }
 
 void wPainterDrawText(wPainter *painter, wRect rect, const wString *str)
@@ -332,7 +407,7 @@ void wPainterDrawText(wPainter *painter, wRect rect, const wString *str)
 	}
 	
 	setShader(painter);
-
+	setTexture(painter, painter->emptyTex, 0);
 	wFontRender(painter->font, str, rect);
 }
 
@@ -355,7 +430,7 @@ void wPainterDrawTexture(wPainter *painter, wRect rect, wTexture *tex)
 	wAssert(painter != NULL);
 	wAssert(tex != NULL);
 
-	bindTexture(painter, wTextureGetNativeHandle(tex), 0);
+	setTexture(painter, wTextureGetNativeHandle(tex), 0);
 	drawRect(painter, rect);
 }
 
@@ -379,6 +454,26 @@ wColor wPainterGetColor(wPainter *painter)
 	wAssert(painter != NULL);
 
 	return painter->state->color;
+}
+
+void wPainterSetBorderRadius(wPainter *painter, float radius)
+{
+	wAssert(painter != NULL);
+
+	if (radius < 0.0f)
+		radius = 0.0f;
+
+	painter->state->borderRadius = radius;
+}
+
+void wPainterSetBorderWidth(wPainter *painter, float width)
+{
+	wAssert(painter != NULL);
+
+	if (width < 0.0f)
+		width = 0.0f;
+
+	painter->state->borderWidth = width;
 }
 
 wRectI wPainterGetScissor(wPainter *painter)

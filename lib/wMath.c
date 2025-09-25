@@ -47,8 +47,8 @@ wRect wRectShrink(wRect rect, float amount)
 
 	rect.x += sx;
 	rect.y += sy;
-	rect.w -= sx;
-	rect.h -= sy;
+	rect.w -= sx * 2;
+	rect.h -= sy * 2;
 
 	return rect;
 }

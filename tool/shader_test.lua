@@ -47,15 +47,17 @@ img:Load("test.png")
 canvas = GuiCanvas()
 
 vbox = canvas:AddChild(GuiVBox())
+
 lbl = vbox:AddChild(GuiLabel())
-lbl:SetColor(Color(1, 0, 0, 1))
 lbl:SetText("Hello")
-lbl = vbox:AddChild(GuiLabel())
-lbl:SetColor(Color(0, 1, 0, 1))
-lbl:SetText("Label")
-lbl = vbox:AddChild(GuiLabel())
-lbl:SetColor(Color(0, 0, 1, 1))
-lbl:SetText("!")
+
+btn = vbox:AddChild(GuiButton())
+btn:SetText("Label")
+btn = vbox:AddChild(GuiButton())
+btn:SetText("Label")
+
+--lbl = vbox:AddChild(GuiLabel())
+--lbl:SetText("!")
 
 -- btn1:SetImage(img)
 

@@ -6,11 +6,57 @@
 
 #include <string.h>
 
+const wClass wGuiStyleClass =
+{
+	.name = "GuiStyle",
+	.base = NULL,
+	.version = 1,
+};
+
 const wClass wGuiNodeClass = 
 {
 	.name = "GuiNode",
 	.base = NULL,
 	.version = 1,
+};
+
+static wGuiStyle wGuiDefaultStyle =
+{
+	.class = &wGuiStyleClass,
+	.sliderGutterSize = 5.0f,
+	.sliderHandleSize = 5.0f,
+
+	.button = {
+		.textColor = { 1, 1, 1, 1 },
+		.backgroundColor = { 0, 0, 0.2, 1 },
+		.borderColor = { 0.8, 0.8, 0.8, 1 },
+		.margin = 4.0f
+	},
+
+	.buttonHover = {
+		.textColor = { 1, 1, 1, 1 },
+		.backgroundColor = { 0, 0, 0.1, 1 },
+		.borderColor = { 1.0, 1.0, 1.0, 1 },
+		.margin = 4.0f
+	},
+
+	.buttonPressed = {
+		.textColor = { 0.5, 0.5, 0.5, 1 },
+		.backgroundColor = { 0, 0, 0.2, 1 },
+		.borderColor = { 0.5, 0.5, 0.5, 1 },
+		.margin = 4.0f
+	},
+	.buttonDisabled = {
+		.textColor = { 0.5, 0.5, 0.5, 1 },
+		.backgroundColor = { 0, 0, 0.2, 1 },
+		.borderColor = { 0.5, 0.5, 0.5, 1 },
+		.margin = 4.0f
+	},
+
+	.label = {
+		.textColor = { 1, 1, 1, 1 },
+		.margin = 1.0f
+	}
 };
 
 static void wGuiNode_paint(wGuiNode *self, wPainter *painter)
@@ -30,8 +76,10 @@ wGuiNode *wGuiNodeAlloc(int privSize)
 	ret->class = &wGuiNodeClass;
 	ret->numChildren = 0;
 	ret->visible = true;
+	ret->enabled = true;
 	ret->paint = wGuiNode_paint;
 	ret->priv = (ret + 1);
+	ret->style = &wGuiDefaultStyle;
 	return ret;
 }
 

@@ -20,12 +20,15 @@ void wPainterSetShader(wPainter *painter, wShader *shader);
 void wPainterFree(wPainter *painter);
 void wPainterClear(wPainter *painter, wColor col);
 void wPainterDrawRect(wPainter *painter, wRect rect);
-void wPainterDrawFilledRect(wPainter *painter, wRect rect);
+void wPainterDrawSlicedRect(wPainter *painter, wRect rect);
+void wPainterDrawBorderRect(wPainter *painter, wRect rect);
 void wPainterDrawText(wPainter *painter, const wRect rect, const wString *str);
 void wPainterDrawImage(wPainter *painter, wRect rect, wImage *img);
 void wPainterDrawTexture(wPainter *painter, wRect rect, wTexture *tex);
+
 void wPainterSetColor(wPainter *painter, wColor col);
 wColor wPainterGetColor(wPainter *painter);
+
 void wPainterSetScissor(wPainter *painter, wRectI rect);
 wRectI wPainterGetScissor(wPainter *painter);
 void wPainterSetViewport(wPainter *painter, wRectI rect);

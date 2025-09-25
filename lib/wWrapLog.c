@@ -56,15 +56,6 @@ static int wlLogFatal(lua_State *L)
 	return 0;
 }
 
-static luaL_Reg wlLog[] = {
-	{ "Debug", wlLogDebug },
-	{ "Info", wlLogInfo },
-	{ "Warn", wlLogWarn },
-	{ "Error", wlLogError },
-	{ "Fatal", wlLogFatal },
-	{ NULL, NULL },
-};
-
 void wlRegisterLog(lua_State *L)
 {
 	wlRegisterFunc(L, "LogDebug", wlLogDebug);

@@ -14,13 +14,13 @@ static const wClass wGuiLabelClass =
 typedef struct _wGuiLabelPriv
 {
 	wString *text;
-	wColor color;
 } wGuiLabelPriv;
 
 static void wGuiLabel_paint(wGuiNode *self, wPainter *painter)
 {
 	wAssert(self != NULL);
 	wGuiLabelPriv *priv = self->priv;
+	wGuiLabelStyle *style = &self->style->label;
 
 	if (!priv->text || wStringSize(priv->text) == 0)
 		return;
@@ -37,7 +37,7 @@ static void wGuiLabel_paint(wGuiNode *self, wPainter *painter)
 	rect.w -= mx;
 	rect.h -= my;
 
-	wPainterSetColor(painter, priv->color);
+	wPainterSetColor(painter, style->textColor);
 	wPainterDrawText(painter, rect, priv->text);
 }
 
@@ -57,7 +57,6 @@ wGuiNode *wGuiLabel()
 
 	wGuiLabelPriv *priv = ret->priv;
 	priv->text = wStringFromCString("Hello label!");
-	priv->color = (wColor){ 1, 1, 1, 1 };
 
 	return ret;
 }
@@ -69,13 +68,4 @@ void wGuiLabelSetText(wGuiNode *self, const wString *str)
 
 	wGuiLabelPriv *priv = self->priv;
 	wStringAssign(priv->text, str);
-}
-
-void wGuiLabelSetColor(wGuiNode *self, wColor col)
-{
-	wAssert(self != NULL);
-	wAssert(self->class == &wGuiLabelClass);
-
-	wGuiLabelPriv *priv = self->priv;
-	priv->color = col;
 }

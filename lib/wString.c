@@ -48,7 +48,7 @@ wString *wStringFromCString(const char *cstr)
 	wString *ret = wStringAlloc();
 
 	len = strlen(cstr);
-	wStringReserve(ret, len);
+	wStringReserve(ret, len + 1);
 
 	ret->size = len;
 	memcpy(ret->data, cstr, len + 1);
@@ -58,7 +58,7 @@ wString *wStringFromCString(const char *cstr)
 
 void wStringAssign(wString *dst, const wString *src)
 {
-	wStringReserve(dst, src->size);
+	wStringReserve(dst, src->size + 1);
 
 	memcpy(dst->data, src->data, src->size);
 	dst->size = src->size;
@@ -79,7 +79,7 @@ wString *wStringFormat(const char *fmt, ...)
 	size = vsnprintf(NULL, 0, fmt, ap);
 	va_end(ap);
 
-	wStringReserve(ret, size);
+	wStringReserve(ret, size + 1);
 
 	va_start(ap, fmt);
 	vsnprintf(ret->data, size + 1, fmt, ap);
@@ -113,13 +113,13 @@ void wStringReserve(wString *str, size_t capacity)
 	if (str->capacity >= capacity)
 		return;
 
-	str->data = wMemRealloc(str->data, capacity + 1);
+	str->data = wMemRealloc(str->data, capacity);
 	str->capacity = capacity;
 }
 
 void wStringAppend(wString *str, size_t size, const char *data)
 {
-	wStringReserve(str, str->size + size);
+	wStringReserve(str, str->size + size + 1);
 
 	memcpy(str->data + str->size, data, size);
 	str->size += size;
