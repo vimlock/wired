@@ -309,7 +309,7 @@ void wPainterDrawFilledRect(wPainter *painter, const wRect rect)
 	drawRect(painter, rect);
 }
 
-void wPainterDrawText(wPainter *painter, const wRect rect, const wString *str)
+void wPainterDrawText(wPainter *painter, wRect rect, const wString *str)
 {
 	wAssert(painter != NULL);
 	wAssert(str != NULL);
@@ -319,7 +319,7 @@ void wPainterDrawText(wPainter *painter, const wRect rect, const wString *str)
 		return;
 	}
 
-	wFontRender(painter->font, str);
+	wFontRender(painter->font, str, rect);
 }
 
 void wPainterDrawImage(wPainter *painter, wRect rect, wImage *img)

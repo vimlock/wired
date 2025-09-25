@@ -6,8 +6,11 @@
 typedef struct _wVertex wVertex;
 struct _wVertex
 {
-	wVec3 pos;
-	wVec2 uv;
+	float posX;
+	float posY;
+	float posZ;
+	float texX;
+	float texY;
 };
 
 typedef uint16_t wIndex;

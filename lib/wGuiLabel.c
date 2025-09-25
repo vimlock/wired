@@ -43,7 +43,7 @@ wGuiNode *wGuiLabel()
 	ret->paint = wGuiLabel_paint;
 
 	wGuiLabelPriv *priv = ret->priv;
-	priv->text = wStringFromCString("Hello label");
+	priv->text = wStringFromCString("Hello label!");
 	priv->color = (wColor){ 0, 0, 0, 1 };
 
 	return ret;

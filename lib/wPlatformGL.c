@@ -41,6 +41,7 @@ static PFNGLCREATETEXTURESPROC glCreateTextures;
 // static PFNGLDELETETEXTURESPROC glDeleteTextures;
 static PFNGLGENERATETEXTUREMIPMAPPROC glGenerateTextureMipmap;
 static PFNGLTEXTUREPARAMETERIPROC glTextureParameteri;
+static PFNGLTEXTUREPARAMETERIVPROC glTextureParameteriv;
 static PFNGLTEXTURESUBIMAGE2DPROC glTextureSubImage2D;
 static PFNGLBINDTEXTUREUNITPROC glBindTextureUnit;
 static PFNGLTEXTURESTORAGE2DPROC glTextureStorage2D;
@@ -104,6 +105,7 @@ static int loadProcs(wPlatformOps *p)
 	PROC(glCreateTextures);
 	PROC(glGenerateTextureMipmap);
 	PROC(glTextureParameteri);
+	PROC(glTextureParameteriv);
 	PROC(glTextureSubImage2D);
 	PROC(glBindTextureUnit);
 	PROC(glTextureStorage2D);
@@ -261,10 +263,39 @@ static int shaderBind(wNativeHandle shader)
 
 static wNativeHandle textureCreate(int w, int h, int fmt)
 {
+	int glfmt;
+	switch (fmt) {
+		case W_IMAGE_GRAYSCALE8:
+			glfmt = GL_R8;
+			break;
+		case W_IMAGE_RGB8:
+			glfmt = GL_RGB8;
+			break;
+		case W_IMAGE_RGBA8:
+			glfmt = GL_RGBA8;
+			break;
+		default:
+			wLogError("invalid texture format");
+			return 0;
+
+	}
+
 	GLuint id = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &id);
-	glTextureStorage2D(id, 1, GL_RGBA8, w, h);
+	glTextureStorage2D(id, 1, glfmt, w, h);
 	CHECK_ERROR();
+
+	if (fmt == W_IMAGE_GRAYSCALE8) {
+		GLint mask[] = {
+			GL_RED,
+			GL_RED,
+			GL_RED,
+			GL_ONE
+		};
+
+		glTextureParameteriv(id, GL_TEXTURE_SWIZZLE_RGBA, mask);
+	}
+
 	return id;
 }
 
@@ -325,14 +356,18 @@ static int textureData(wNativeHandle tex, int x, int y, int w, int h, int fmt, c
 		case W_IMAGE_GRAYSCALE8:
 			glfmt = GL_RED;
 			break;
-		case W_IMAGE_RGBA8:
-			glfmt = GL_RGBA;
-			break;
 		case W_IMAGE_RGB8:
 			glfmt = GL_RGB;
 			break;
+		case W_IMAGE_RGBA8:
+			glfmt = GL_RGBA;
+			break;
+		default:
+			wLogError("invalid texture format");
+			return W_INVALID_ARGUMENT;
 	}
 
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTextureSubImage2D(tex, 0, x, y, w, h, glfmt, GL_UNSIGNED_BYTE, data);
 	CHECK_ERROR();
 	return W_SUCCESS;
@@ -391,7 +426,7 @@ static int setViewport(int x, int y, int w, int h)
 
 static int draw(int numElements, wNativeHandle vbo, wNativeHandle ibo)
 {
-	glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(float) * 5);
+	glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(wVertex));
 	glVertexArrayElementBuffer(vao, ibo);
 
 	glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
