@@ -330,6 +330,8 @@ void wPainterDrawText(wPainter *painter, wRect rect, const wString *str)
 		wLogWarn("No font set");
 		return;
 	}
+	
+	setShader(painter);
 
 	wFontRender(painter->font, str, rect);
 }

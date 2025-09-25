@@ -200,6 +200,26 @@ static int wlGuiLabel__new(lua_State *L)
 	return 1;
 }
 
+static wGuiNode *wlCheckGuiLabel(lua_State *L, int index)
+{
+	return wlCheckClass(L, index, "GuiLabel");
+}
+
+static int wlGuiLabelSetText(lua_State *L)
+{
+	wGuiNode *self = wlCheckGuiLabel(L, 1);
+	wString text; wlCheckString(L, 2, &text);
+	wGuiLabelSetText(self, &text);
+	return 0;
+}
+
+static int wlGuiLabelSetColor(lua_State *L)
+{
+	wGuiNode *self = wlCheckGuiLabel(L, 1);
+	wColor *col = wlCheckColor(L, 2);
+	wGuiLabelSetColor(self, *col);
+	return 0;
+}
 
 static int wlGuiHBox__new(lua_State *L)
 {
@@ -289,6 +309,8 @@ static luaL_Reg wlGuiImage[] = {
 
 static luaL_Reg wlGuiLabel[] = {
 	{ "__new", wlGuiLabel__new },
+	{ "SetText", wlGuiLabelSetText },
+	{ "SetColor", wlGuiLabelSetColor },
 	{ NULL, NULL }
 };
 

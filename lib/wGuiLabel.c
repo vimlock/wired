@@ -57,15 +57,25 @@ wGuiNode *wGuiLabel()
 
 	wGuiLabelPriv *priv = ret->priv;
 	priv->text = wStringFromCString("Hello label!");
-	priv->color = (wColor){ 0, 0, 0, 1 };
+	priv->color = (wColor){ 1, 1, 1, 1 };
 
 	return ret;
 }
 
-void wGuiLabelSetText(wGuiNode *self, wString *str)
+void wGuiLabelSetText(wGuiNode *self, const wString *str)
 {
 	wAssert(self != NULL);
+	wAssert(self->class == &wGuiLabelClass);
 
 	wGuiLabelPriv *priv = self->priv;
 	wStringAssign(priv->text, str);
+}
+
+void wGuiLabelSetColor(wGuiNode *self, wColor col)
+{
+	wAssert(self != NULL);
+	wAssert(self->class == &wGuiLabelClass);
+
+	wGuiLabelPriv *priv = self->priv;
+	priv->color = col;
 }

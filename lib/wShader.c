@@ -88,13 +88,13 @@ void wShaderFree(wShader *shader)
 void wShaderSetVertex(wShader *shader, const wString *source)
 {
 	wAssert(shader != NULL);
-	return wStringAssign(source, shader->vertSource);
+	return wStringAssign(shader->vertSource, source);
 }
 
 void wShaderSetFragment(wShader *shader, const wString *source)
 {
 	wAssert(shader != NULL);
-	return wStringAssign(source, shader->fragSource);
+	return wStringAssign(shader->fragSource, source);
 }
 
 int wShaderCompile(wShader *shader)

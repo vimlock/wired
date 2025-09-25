@@ -83,7 +83,8 @@ wGuiNode *wGuiButton();
 void wGuiButtonSetImage(wGuiNode *node, wImage *img);
 
 wGuiNode *wGuiLabel();
-void wGuiLabelSetText(wGuiNode *node, wString *str);
+void wGuiLabelSetText(wGuiNode *node, const wString *str);
+void wGuiLabelSetColor(wGuiNode *node, wColor col);
 
 wGuiNode *wGuiVBox();
 

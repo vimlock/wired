@@ -12,7 +12,7 @@ typedef struct _wString
 
 wString *wStringAlloc();
 wString *wStringCopy(const wString *src);
-void wStringAssign(const wString *src, wString *dst);
+void wStringAssign(wString *dst, const wString *src);
 wString *wStringFromCString(const char *cstr);
 
 void wStringFree(wString *str);

@@ -34,7 +34,7 @@ wString *wStringCopy(const wString *src)
 	int err;
 
 	wString *ret = wStringAlloc();
-	wStringAssign(src, ret);
+	wStringAssign(ret, src);
 	return ret;
 }
 
@@ -56,7 +56,7 @@ wString *wStringFromCString(const char *cstr)
 	return ret;
 }
 
-void wStringAssign(const wString *src, wString *dst)
+void wStringAssign(wString *dst, const wString *src)
 {
 	wStringReserve(dst, src->size);
 
