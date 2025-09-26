@@ -31,6 +31,7 @@ void wTileLayerDraw(wTileLayer *layer, wPainter *painter);
 void wTileLayerSetTileFlags(wTileLayer *layer, int x, int y, unsigned flags);
 void wTileLayerSetTile(wTileLayer *layer, int x, int y, wTileIndex index);
 void wTileLayerFill(wTileLayer *layer, int x, int y, int w, int h, wTileIndex index);
+void wTileLayerFillRandom(wTileLayer *layer, int x, int y, int w, int h, wTileIndex index, float chance);
 wTileIndex wTileLayerGetTile(wTileLayer *layer, int x, int y);
 void wTileLayerSetSheet(wTileLayer *layer, int count, const wRect *rects);
 void wTileLayerSetTexture(wTileLayer *layer, const wString *texture);

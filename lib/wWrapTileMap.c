@@ -118,6 +118,22 @@ int wlTileLayerFill(lua_State *L)
 	return 0;
 }
 
+int wlTileLayerFillRandom(lua_State *L)
+{
+	wTileLayer *self = wlCheckTileLayer(L, 1);
+
+	int x = luaL_checkinteger(L, 2);
+	int y = luaL_checkinteger(L, 3);
+	int w = luaL_checkinteger(L, 4);
+	int h = luaL_checkinteger(L, 5);
+	int index = luaL_checkinteger(L, 6);
+	float chance = luaL_checknumber(L, 7);
+
+	wTileLayerFillRandom(self, x, y, w, h, index, chance);
+
+	return 0;
+}
+
 static int wlTileLayerSetTexture(lua_State *L)
 {
 	wTileLayer *self = wlCheckTileLayer(L, 1);
@@ -136,6 +152,7 @@ static const luaL_Reg wlTileLayer[] =
 	{ "LoadRegion", wlTileLayerLoadRegion },
 	{ "Draw", wlTileLayerDraw },
 	{ "Fill", wlTileLayerFill },
+	{ "FillRandom", wlTileLayerFillRandom },
 	{ "SetSheet", wlTileLayerSetSheet },
 	{ "SetTexture", wlTileLayerSetTexture },
 

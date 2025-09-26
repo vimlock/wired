@@ -5,6 +5,7 @@
 #include "../include/wired/wMemory.h"
 #include "../include/wired/wLog.h"
 #include "../include/wired/wAssert.h"
+#include "../include/wired/wRandom.h"
 #include "../include/wired/wPlatform.h"
 #include "../include/wired/wCache.h"
 
@@ -62,7 +63,7 @@ wTileLayer *wTileLayerAlloc(int width, int height)
 	ret->platform = wPlatform;
 	ret->width = width;
 	ret->height = height;
-	ret->tileSize = 32;
+	ret->tileSize = 64;
 	ret->tiles = wMemAlloc(sizeof(wTileData) * width * height);
 	ret->texture = wStringFromCString("");
 
@@ -117,7 +118,7 @@ void wTileLayerLoadRegion(wTileLayer *layer, int x, int y, int w, int h)
 			float tx = k * ts;
 			float ty = i * ts;
 
-			wRect uv = layer->sheet[tile->index];
+			wRect uv = layer->sheet[index];
 
 			wVertex *vertex = &layer->vertices[count * 4];
 			vertex[0].posX = tx;
@@ -153,8 +154,6 @@ void wTileLayerLoadRegion(wTileLayer *layer, int x, int y, int w, int h)
 			indices[4] = baseIndex + 3;
 			indices[5] = baseIndex + 0;
 
-			wLogDebug("Use tile %f %f %f %f", tx, ty, ts, ts);
-
 			count++;
 		}
 	}
@@ -186,6 +185,16 @@ void wTileLayerSetSheet(wTileLayer *layer, int count, const wRect *rects)
 	layer->sheet = wMemRealloc(layer->sheet, sizeof(wRect) * count);
 	memcpy(layer->sheet, rects, sizeof(wRect) * count);
 	layer->sheetCount = count;
+
+	for (int i = 0; i  < count; ++i) {
+		wLogDebug("%f %f %f %f",
+				rects[i].x,
+				rects[i].y,
+				rects[i].w,
+				rects[i].h
+			);
+	}
+
 	wLogDebug("Set sheet %d items", count);
 }
 
@@ -219,9 +228,25 @@ void wTileLayerFill(wTileLayer *layer, int x, int y, int w, int h, wTileIndex in
 	wAssert(x < layer->width && y < layer->height);
 	wAssert(x + w < layer->width && y + h < layer->height);
 
-	for (; y < h; ++y) {
-		for (; x < w; ++x) {
-			wTileLayerSetTile(layer, x, y, index);
+	for (int yy = y; yy < h; ++yy) {
+		for (int xx = x; xx < w; ++xx) {
+			wTileLayerSetTile(layer, xx, yy, index);
+		}
+	}
+}
+
+void wTileLayerFillRandom(wTileLayer *layer, int x, int y, int w, int h, wTileIndex index, float chance)
+{
+	wAssert(x >= 0 && y >= 0);
+	wAssert(w >= 0 && h >= 0);
+	wAssert(x < layer->width && y < layer->height);
+	wAssert(x + w < layer->width && y + h < layer->height);
+
+	for (int yy = y; yy < h; ++yy) {
+		for (int xx = x; xx < w; ++xx) {
+
+			if (wRandomFloat(0, 1) < chance)
+				wTileLayerSetTile(layer, xx, yy, index);
 		}
 	}
 }

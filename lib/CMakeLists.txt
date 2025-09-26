@@ -26,6 +26,7 @@ add_library(Wired SHARED
 	wPlatform.c
 	wPlatformGL.c
 	wPlatformSDL.c
+	wRandom.c
 	wScript.c
 	wShader.c
 	wSprite.c

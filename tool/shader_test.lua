@@ -72,11 +72,12 @@ canvas = GuiCanvas()
 layer = TileLayer(1024, 1024)
 layer:SetSheet({
 	Rect(  0, 0, 32, 32),
-	Rect( 32, 0, 32, 32),
+	Rect( 32, 128, 32, 32),
 	Rect( 64, 0, 32, 32),
 	Rect(128, 0, 32, 32),
 	Rect(0, 128, 32, 32),
 	Rect(0, 160, 32, 32),
+	Rect(160, 96, 32, 32),
 })
 
 LoadTexture("tex_skeleton", "../skeleton.png")
@@ -85,17 +86,6 @@ LoadTexture("tex_zealot",   "../zealot.png")
 LoadTexture("tex_tileset_grass", "../TX Tileset Grass.png")
 
 anim = SpriteAnim()
--- anim:AppendFrame(2, Rect(30, 10, 80, 100))
--- anim:AppendFrame(2, Rect(140, 10, 80, 100))
--- anim:AppendFrame(2, Rect(230, 10, 80, 100))
--- anim:AppendFrame(2, Rect(350, 10, 80, 100))
--- anim:AppendFrame(2, Rect(470, 10, 80, 100))
--- anim:AppendFrame(2, Rect(570, 10, 80, 100))
--- anim:AppendFrame(2, Rect(670, 10, 80, 100))
--- anim:AppendFrame(2, Rect(760, 10, 80, 100))
--- anim:AppendFrame(2, Rect(670, 10, 80, 100))
--- anim:AppendFrame(2, Rect(570, 10, 80, 100))
--- anim:AppendFrame(2, Rect(470, 10, 80, 100))
 anim:AppendFrame(5, Rect(10, 136, 100, 100))
 anim:AppendFrame(5, Rect(110, 136, 100, 100))
 anim:AppendFrame(5, Rect(210, 136, 100, 100))
@@ -117,6 +107,10 @@ sprite = SpriteRenderer()
 sprite:SetSheet(sheet)
 sprite:SetAnim("default")
 
+layer:Fill(0, 0, 128, 128, 1)
+layer:FillRandom(0, 0, 128, 128, 3, 0.1)
+layer:FillRandom(0, 0, 128, 128, 5, 0.1)
+layer:FillRandom(0, 0, 128, 128, 7, 0.1)
 layer:SetTile(0, 0, 1)
 layer:SetTile(1, 0, 1)
 layer:SetTile(2, 0, 1)
@@ -150,7 +144,7 @@ function update()
 	sprite:Draw(painter)
 	sprite:Update()
 
-	canvas:Paint(painter)
+	-- canvas:Paint(painter)
 end
 
 function MousePress(x, y, button)
