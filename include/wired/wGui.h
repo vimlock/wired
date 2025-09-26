@@ -1,7 +1,6 @@
 #pragma once
 
 #include "wMath.h"
-#include "wGraphics.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,6 +14,7 @@ typedef struct _wString wString;
 typedef struct _wGuiNode wGuiNode;
 typedef struct _wClass wClass;
 typedef struct _wGuiStyle wGuiStyle;
+typedef struct _wImage wImage;
 
 typedef struct _wGuiButtonStyle
 {

@@ -1,6 +1,8 @@
-#include "../include/wired/wGraphics.h"
+#include "../include/wired/wSprite.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wError.h"
+
+#include <stddef.h>
 
 typedef struct _wSprite
 {
@@ -49,11 +51,10 @@ int wSpriteAnimGetAction(wSpriteAnim *anim)
 	return 0;
 }
 
-int wSpriteAnimSetAction(wSpriteAnim *anim, int frame)
+void wSpriteAnimSetAction(wSpriteAnim *anim, int frame)
 {
 	wAssert(anim != NULL);
 	// TODO
-	return W_SUCCESS;
 }
 
 int wSpriteAnimGetRecovery(wSpriteAnim *anim)
@@ -63,11 +64,10 @@ int wSpriteAnimGetRecovery(wSpriteAnim *anim)
 	return 0;
 }
 
-int wSpriteAnimSetRecovery(wSpriteAnim *anim, int frame)
+void wSpriteAnimSetRecovery(wSpriteAnim *anim, int frame)
 {
 	wAssert(anim != NULL);
 	// TODO
-	return W_SUCCESS;
 }
 
 int wSpriteAnimGetCanInterrupt(wSpriteAnim *anim)
@@ -77,9 +77,8 @@ int wSpriteAnimGetCanInterrupt(wSpriteAnim *anim)
 	return 0;
 }
 
-int wSpriteAnimSetCanInterrupt(wSpriteAnim *anim, bool canInterrupt)
+void wSpriteAnimSetCanInterrupt(wSpriteAnim *anim, bool canInterrupt)
 {
 	wAssert(anim != NULL);
 	// TODO
-	return W_SUCCESS;
 }

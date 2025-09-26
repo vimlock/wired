@@ -46,6 +46,14 @@ canvas = GuiCanvas()
 layer = TileLayer(1024, 1024)
 layer:SetSheet({Rect(0, 0, 32, 32), Rect(0, 0, 32, 32)})
 
+anim = SpriteAnim()
+anim:SetAppendFrame(1, Rect(0, 0, 32, 32))
+anim:SetAppendFrame(1, Rect(32, 0, 32, 32))
+
+sheet = SpriteSheet()
+sheet:AddState("default", anim)
+sheet:AddState("walking", anim)
+
 layer:SetTile(0, 0, 1)
 layer:SetTile(1, 0, 1)
 layer:SetTile(2, 0, 1)

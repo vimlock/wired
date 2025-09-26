@@ -59,7 +59,7 @@ wTileLayer *wTileLayerAlloc(int width, int height)
 	ret->platform = wPlatform;
 	ret->width = width;
 	ret->height = height;
-	ret->tileSize = 64;
+	ret->tileSize = 32;
 	ret->tiles = wMemAlloc(sizeof(wTileData) * width * height);
 
 	size_t vs = sizeof(wVertex) * MAX_RENDER_TILES * 4;

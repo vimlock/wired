@@ -1,4 +1,4 @@
-#include "../include/wired/wGraphics.h"
+#include "../include/wired/wWindow.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wPlatform.h"

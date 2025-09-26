@@ -1,9 +1,14 @@
 #pragma once
 
-#include "wString.h"
-#include "wGraphics.h"
+#include "wMath.h"
+
+#include <stdint.h>
+#include <stddef.h>
 
 typedef struct _wVertex wVertex;
+typedef struct _wString wString;
+typedef struct _wImage wImage;
+
 struct _wVertex
 {
 	float posX;
@@ -14,6 +19,7 @@ struct _wVertex
 };
 
 typedef uint16_t wIndex;
+typedef uintptr_t wNativeHandle;
 
 typedef struct _wPlatformOps
 {

@@ -2,6 +2,7 @@
 #include "../include/wired/wClass.h"
 #include "../include/wired/wPainter.h"
 #include "../include/wired/wAssert.h"
+#include "../include/wired/wWindow.h"
 
 static const wClass wGuiCanvasClass = {
 	.name = "GuiCanvas",

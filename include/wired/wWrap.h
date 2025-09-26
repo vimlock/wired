@@ -3,10 +3,10 @@
 #include "wMath.h"
 #include "wString.h"
 #include "wBuffer.h"
-#include "wGraphics.h"
 #include "wPainter.h"
 #include "wShader.h"
 #include "wGui.h"
+#include "wSprite.h"
 
 #ifdef __cplusplus
 extern "C" {

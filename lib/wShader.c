@@ -4,6 +4,7 @@
 #include "../include/wired/wError.h"
 #include "../include/wired/wPlatform.h"
 #include "../include/wired/wMemory.h"
+#include "../include/wired/wString.h"
 
 #include <string.h>
 

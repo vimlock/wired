@@ -3,6 +3,8 @@
 #include "../include/wired/wLog.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wTexture.h"
+#include "../include/wired/wString.h"
+#include "../include/wired/wShader.h"
 #include "../include/wired/wImage.h"
 
 #include <GL/gl.h>

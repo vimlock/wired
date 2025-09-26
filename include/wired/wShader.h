@@ -1,8 +1,17 @@
 #pragma once
 
-#include "wGraphics.h"
+#include "wPlatform.h"
 
 typedef struct _wShader wShader;
+
+enum wShaderValueType
+{
+	W_SHADER_FLOAT,
+	W_SHADER_VEC2,
+	W_SHADER_VEC3,
+	W_SHADER_VEC4,
+	W_SHADER_MAT4,
+};
 
 wShader *wShaderAlloc();
 int wShaderInit(wShader *shader);

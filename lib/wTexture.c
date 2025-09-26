@@ -1,4 +1,4 @@
-#include "../include/wired/wGraphics.h"
+#include "../include/wired/wTexture.h"
 #include "../include/wired/wClass.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wAssert.h"

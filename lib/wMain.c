@@ -4,6 +4,7 @@
 #include "../include/wired/wError.h"
 #include "../include/wired/wArgs.h"
 #include "../include/wired/wEvent.h"
+#include "../include/wired/wWindow.h"
 
 enum
 {
