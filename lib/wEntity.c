@@ -1,26 +1,64 @@
 #include "../include/wired/wEntity.h"
 #include "../include/wired/wAssert.h"
+#include "../include/wired/wClass.h"
 #include "../include/wired/wError.h"
+#include "../include/wired/wString.h"
+#include "../include/wired/wMemory.h"
+
+#include <stddef.h>
+
+static wClass wEntityClass =
+{
+	.name = "Entity",
+	.base = NULL,
+	.version = 1,
+};
 
 struct _wEntity
 {
+	wClass *cls;
 	wString *name;
 
-	wAbility *ability;
+	wAbility **ability;
 	int abilityCount;
 
-	wStatus *status;
+	wStatus **status;
 	int statusCount;
 
-	wItem *item;
+	wItem **item;
 	int itemCount;
 
-	wSpriteEffect *effects;
+	wSpriteEffect **effects;
 	int effectsCount;
 
-	wSpriteParticles *particles;
+	wSpriteParticles **particles;
 	int particlesCount;
 };
+
+wEntity *wEntityAlloc()
+{
+	wEntity *ret = wMemAlloc(sizeof(wEntity));
+
+	ret->cls = &wEntityClass;
+	ret->name = wStringFromCString("");
+
+	return ret;
+}
+
+void wEntityFree(wEntity *e)
+{
+	if (!e)
+		return;
+
+	wStringFree(e->name);
+
+	wMemFree(e->ability);
+	wMemFree(e->status);
+	wMemFree(e->effects);
+	wMemFree(e->particles);
+
+	wMemFree(e);
+}
 
 int wEntityReduceMana(const wEntity *entity)
 {

@@ -6,6 +6,7 @@
 #include "../include/wired/wLog.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wPlatform.h"
+#include "../include/wired/wCache.h"
 
 #include <string.h>
 
@@ -48,6 +49,8 @@ struct _wTileLayer
 
 	wRect *sheet;
 	int sheetCount;
+
+	wString *texture;
 };
 
 wTileLayer *wTileLayerAlloc(int width, int height)
@@ -61,6 +64,7 @@ wTileLayer *wTileLayerAlloc(int width, int height)
 	ret->height = height;
 	ret->tileSize = 32;
 	ret->tiles = wMemAlloc(sizeof(wTileData) * width * height);
+	ret->texture = wStringFromCString("");
 
 	size_t vs = sizeof(wVertex) * MAX_RENDER_TILES * 4;
 	size_t is = sizeof(wIndex) * MAX_RENDER_TILES * 6;
@@ -81,6 +85,8 @@ void wTileLayerFree(wTileLayer *layer)
 
 	layer->platform->bufferDestroy(layer->ibo);
 	layer->platform->bufferDestroy(layer->vbo);
+
+	wStringFree(layer->texture);
 
 	wMemFree(layer->tiles);
 	wMemFree(layer->vertices);
@@ -161,8 +167,10 @@ void wTileLayerLoadRegion(wTileLayer *layer, int x, int y, int w, int h)
 
 void wTileLayerDraw(wTileLayer *layer, wPainter *painter)
 {
+	wTexture *tex = wGetTexture(layer->texture);
+
 	wPainterBindShader(painter);
-	wPainterBindTexture(painter, NULL, 0);
+	wPainterBindTexture(painter, tex, 0);
 	layer->platform->draw(layer->numIndices, layer->vbo, layer->ibo);
 }
 
@@ -216,6 +224,13 @@ void wTileLayerFill(wTileLayer *layer, int x, int y, int w, int h, wTileIndex in
 			wTileLayerSetTile(layer, x, y, index);
 		}
 	}
+}
+
+void wTileLayerSetTexture(wTileLayer *layer, const wString *texture)
+{
+	wAssert(layer != NULL);
+	wAssert(texture != NULL);
+	wStringAssign(layer->texture, texture);
 }
 
 static const wClass wTileMapClass = {

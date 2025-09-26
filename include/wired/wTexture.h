@@ -6,6 +6,7 @@
 
 typedef struct _wTexture wTexture;
 typedef struct _wImage wImage;
+typedef struct _wString wString;
 typedef uintptr_t wNativeHandle;
 
 enum wTextureFilter
@@ -28,3 +29,5 @@ int wTextureSetFilter(wTexture *tex, int mode);
 int wTextureSetWrap(wTexture *tex, int mode);
 wNativeHandle wTextureGetNativeHandle(wTexture *tex);
 wIVec2 wTextureGetSize(wTexture *tex);
+int wTextureGetWidth(const wTexture *tex);
+int wTextureGetHeight(const wTexture *tex);

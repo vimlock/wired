@@ -74,6 +74,7 @@ void wlRegisterType(lua_State *L, const char *name, const luaL_Reg *reg);
 void wlRegisterDerivedType(lua_State *L, const char *name, const char *base, const luaL_Reg *reg);
 void wlRegisterEnum(lua_State *L, const char *name, const  wlEnum *e);
 
+void wlRegisterCache(lua_State *L);
 void wlRegisterFile(lua_State *L);
 void wlRegisterFont(lua_State *L);
 void wlRegisterGui(lua_State *L);

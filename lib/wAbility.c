@@ -1,9 +1,22 @@
 #include "../include/wired/wAbility.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wAssert.h"
+#include "../include/wired/wClass.h"
+#include "../include/wired/wString.h"
+#include "../include/wired/wMemory.h"
+
+#include <stddef.h>
+
+static const wClass wAbilityClass =
+{
+	.name = "Ability",
+	.base = NULL,
+	.version = 1,
+};
 
 struct _wAbility
 {
+	const wClass *cls;
 	wString *name;
 	wString *script;
 };
@@ -12,6 +25,24 @@ void wAbilityRegister(const wString *name, const wString *script)
 {
 	wAssert(name != NULL);
 	wAssert(script != NULL);
+}
+
+wAbility *wAbilityAlloc()
+{
+	wAbility *ret = wMemAlloc(sizeof(wAbility));
+	ret->name = wStringFromCString("");
+	ret->script = wStringFromCString("");
+	return ret;
+}
+
+void wAbilityFree(wAbility *a)
+{
+	if (!a)
+		return;
+
+	wStringFree(a->name);
+	wStringFree(a->script);
+	wMemFree(a);
 }
 
 int wAbilityUseTargetSelf(wAbility *ability)

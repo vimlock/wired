@@ -169,6 +169,7 @@ static int wlInitLibs()
 	wlRegisterGui(L);
 	wlRegisterFont(L);
 	wlRegisterTileLayer(L);
+	wlRegisterCache(L);
 
 	return W_SUCCESS;
 }

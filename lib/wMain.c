@@ -41,7 +41,7 @@ int main(int argc, const char *argv[])
 		return W_EXIT_FATAL;
 	}
 
-	err = wWindowOpen(800, 600);
+	err = wWindowOpen(1600, 1200);
 	if (err) {
 		wLogFatal("Could not open window: %s", wErrorStr(err));
 		return W_EXIT_FATAL;

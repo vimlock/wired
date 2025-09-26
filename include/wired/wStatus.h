@@ -5,6 +5,10 @@ typedef struct _wString wString;
 typedef struct _wEntity wEntity;
 
 int wStatusRegister(const wString *name, const wString *script);
+
+wStatus *wStatusAlloc();
+void wStatusFree(wStatus *s);
+
 int wStatusInvokeOnInit(wStatus *s);
 int wStatusInvokeOnThink(wStatus *s);
 int wStatusInvokeOnRemoved(wStatus *s);

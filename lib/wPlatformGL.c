@@ -283,7 +283,8 @@ static wNativeHandle textureCreate(int w, int h, int fmt)
 	}
 
 	GLuint id = 0;
-	glCreateTextures(GL_TEXTURE_2D, 1, &id);
+	// glCreateTextures(GL_TEXTURE_2D, 1, &id);
+	glCreateTextures(GL_TEXTURE_RECTANGLE, 1, &id);
 	glTextureStorage2D(id, 1, glfmt, w, h);
 	CHECK_ERROR();
 

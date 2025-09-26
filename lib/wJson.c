@@ -101,6 +101,7 @@ static void wJsonLex(wJsonToken *tok)
 
 static int wJsonParseNumber(double *ret)
 {
+	return 0;
 }
 
 static int wJsonParseString(wString *ret)

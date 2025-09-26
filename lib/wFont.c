@@ -95,10 +95,10 @@ static void wFontLoadGlyph(wFont *font, unsigned long code)
 	dst->bearingX = glyph->bitmap_left;
 	dst->bearingY = glyph->bitmap_top;
 	dst->advance = glyph->advance.x >> 6;
-	dst->u0 = txp / (float)ATLAS_W;
-	dst->u1 = (txp + tw) / (float)ATLAS_W;
-	dst->v0 = typ / (float)ATLAS_W;
-	dst->v1 = (typ + th) / (float)ATLAS_W;
+	dst->u0 = txp;
+	dst->u1 = (txp + tw);
+	dst->v0 = typ;
+	dst->v1 = (typ + th);
 }
 
 static wFontGlyph *wFontFindGlyph(wFont *font, unsigned long code)

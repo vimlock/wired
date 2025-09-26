@@ -142,8 +142,20 @@ wIVec2 wTextureGetSize(wTexture *tex)
 {
 	wAssert(tex != NULL);
 
-	wIVec2 tmp = { 0, 0 };
+	wIVec2 tmp = { tex->width, tex->height };
 	return tmp;
+}
+
+int wTextureGetWidth(const wTexture *tex)
+{
+	wAssert(tex != NULL);
+	return tex->width;
+}
+
+int wTextureGetHeight(const wTexture *tex)
+{
+	wAssert(tex != NULL);
+	return tex->height;
 }
 
 wNativeHandle wTextureGetNativeHandle(wTexture *tex)

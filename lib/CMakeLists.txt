@@ -2,6 +2,8 @@ add_library(Wired SHARED
 	wArgs.c
 	wAssert.c
 	wBuffer.c
+	wCache.c
+	wEffect.c
 	wError.c
 	wEvent.c
 	wFile.c
@@ -33,6 +35,7 @@ add_library(Wired SHARED
 	wWindow.c
 
 	wWrapBuffer.c
+	wWrapCache.c
 	wWrapFile.c
 	wWrapFont.c
 	wWrapGui.c

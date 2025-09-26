@@ -2,6 +2,9 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
+
+typedef uint64_t wHash;
 
 typedef struct _wString
 {
@@ -27,3 +30,5 @@ void wStringClear(wString *str);
 const char *wStringData(const wString *str);
 size_t wStringSize(const wString *str);
 void wStringReserve(wString *str, size_t capacity);
+
+wHash wStringHash(const wString *str);

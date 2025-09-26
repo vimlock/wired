@@ -58,6 +58,8 @@ struct _wPainter
 	wNativeHandle vbo;
 	wNativeHandle ibo;
 
+	int numIndices;
+
 	wNativeHandle emptyTex;
 
 	wNativeHandle roundedTex;
@@ -70,13 +72,13 @@ struct _wPainter
 	int uniformMvp;
 };
 
-static void setRectMesh(wPainter *painter, wRect rect)
+static void setRectMesh(wPainter *painter, wRect rect, wRect uv)
 {
 	float vertices[4*5] = {
-		rect.x,          rect.y,          0.0f,  0.0f, 0.0f,
-		rect.x + rect.w, rect.y,          0.0f,  1.0f, 0.0f,
-		rect.x + rect.w, rect.y + rect.h, 0.0f,  1.0f, 1.0f,
-		rect.x,          rect.y + rect.h, 0.0f,  0.0f, 1.0f
+		rect.x,          rect.y,          0.0f,  uv.x,        uv.y,
+		rect.x + rect.w, rect.y,          0.0f,  uv.x + uv.w, uv.y,
+		rect.x + rect.w, rect.y + rect.h, 0.0f,  uv.x + uv.w, uv.y + uv.h,
+		rect.x,          rect.y + rect.h, 0.0f,  uv.x,        uv.y + uv.h
 	};
 
 	uint16_t indices[6] = {
@@ -88,6 +90,8 @@ static void setRectMesh(wPainter *painter, wRect rect)
 
 	platform->bufferData(painter->vbo, sizeof(vertices), vertices);
 	platform->bufferData(painter->ibo, sizeof(indices),  indices);
+
+	painter->numIndices = 6;
 }
 
 static void setSlicedRectMesh(wPainter *painter, wRect rect, wRect uvRect)
@@ -113,14 +117,14 @@ static void setSlicedRectMesh(wPainter *painter, wRect rect, wRect uvRect)
 	float y3 = rect.y + rect.h;
 
 	float u0 = 0.0f;
-	float u1 = bl;
-	float u2 = 1.0f - br;
-	float u3 = 1.0f;
+	float u1 = 16;
+	float u2 = 16;
+	float u3 = 32;
 
 	float v0 = 0.0f;
-	float v1 = bt;
-	float v2 = 1.0f - bb;
-	float v3 = 1.0f;
+	float v1 = 16;
+	float v2 = 16;
+	float v3 = 32;
 
 	float xcoords[4] = { x0, x1, x2, x3 };
 	float ycoords[4] = { y0, y1, y2, y3 };
@@ -158,6 +162,13 @@ static void setSlicedRectMesh(wPainter *painter, wRect rect, wRect uvRect)
 
 	platform->bufferData(painter->vbo, sizeof(vertices), vertices);
 	platform->bufferData(painter->ibo, sizeof(indices),  indices);
+
+	painter->numIndices = 54;
+}
+
+void wPainterBindRectMesh(wPainter *painter, wRect rect, wRect uv)
+{
+	setRectMesh(painter, rect, uv);
 }
 
 void wPainterBindShader(wPainter *painter)
@@ -169,7 +180,6 @@ void wPainterBindShader(wPainter *painter)
 	platform->shaderBind(shader);
 
 	wMat4Multiply(&painter->state->projMat, &painter->state->viewMat, &painter->state->mvpMat);
-	// wMat4Multiply(&painter->state->viewMat, &painter->state->projMat, &painter->state->mvpMat);
 
 	platform->shaderSetValue(shader, painter->uniformMvp, W_SHADER_MAT4, &painter->state->mvpMat);
 	platform->shaderSetValue(shader, painter->uniformColor, W_SHADER_VEC4, &painter->state->color);
@@ -191,6 +201,13 @@ void wPainterBindTexture(wPainter *painter, wTexture *tex, int index)
 	setTexture(painter, handle, index);
 }
 
+void wPainterDrawCall(wPainter *painter)
+{
+	wPlatformOps *platform = painter->platform;
+
+	platform->draw(painter->numIndices, painter->vbo, painter->ibo);
+}
+
 static void drawRect(wPainter *painter, wRect rect)
 {
 	if (!painter->shader) {
@@ -198,12 +215,11 @@ static void drawRect(wPainter *painter, wRect rect)
 		return;
 	}
 
-	wPlatformOps *platform = painter->platform;
+	wRect uvs = {0, 0, 1, 1 };
 
-	setRectMesh(painter, rect);
+	setRectMesh(painter, rect, uvs);
 	wPainterBindShader(painter);
-
-	platform->draw(6, painter->vbo, painter->ibo);
+	wPainterDrawCall(painter);
 }
 
 static int wPainterCheckSupported(wPlatformOps *p)
@@ -386,7 +402,7 @@ void wPainterDrawSlicedRect(wPainter *painter, wRect rect)
 
 	wPlatformOps *platform = painter->platform;
 
-	setSlicedRectMesh(painter, rect, (wRect){ 0.5, 0.5, 0.5, 0.5});
+	setSlicedRectMesh(painter, rect, (wRect){ 16, 16, 16, 16});
 	wPainterBindShader(painter);
 	setTexture(painter, painter->roundedTex, 0);
 	platform->draw(54, painter->vbo, painter->ibo);
@@ -511,9 +527,9 @@ void wPainterSetViewport(wPainter *painter, wRectI rect)
 	//  wMat4Ortho(&painter->state->projMat, rect.x, rect.x + rect.w, rect.y, rect.y + rect.h, -1, 1);
 	wMat4Ortho(&painter->state->projMat,
 		(float)rect.x,
-		(float)rect.x + rect.w,
+		(float)rect.x + (rect.w),
 		(float)rect.y,
-		(float)rect.y + rect.h,
+		(float)rect.y + (rect.h),
 		-1, 1);
 	// wMat4Transpose(&painter->state->mvpMat);
 	painter->state->dirty |= W_PAINTER_PROJ_MAT;

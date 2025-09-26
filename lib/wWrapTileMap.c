@@ -118,6 +118,14 @@ int wlTileLayerFill(lua_State *L)
 	return 0;
 }
 
+static int wlTileLayerSetTexture(lua_State *L)
+{
+	wTileLayer *self = wlCheckTileLayer(L, 1);
+	wString texture; wlCheckString(L, 2, &texture);
+	wTileLayerSetTexture(self, &texture);
+	return 0;
+}
+
 static const luaL_Reg wlTileLayer[] =
 {
 	{ "__new", wlTileLayer__new },
@@ -129,6 +137,7 @@ static const luaL_Reg wlTileLayer[] =
 	{ "Draw", wlTileLayerDraw },
 	{ "Fill", wlTileLayerFill },
 	{ "SetSheet", wlTileLayerSetSheet },
+	{ "SetTexture", wlTileLayerSetTexture },
 
 	{ NULL, NULL }
 };

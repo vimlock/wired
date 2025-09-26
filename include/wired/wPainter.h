@@ -38,5 +38,7 @@ void wPainterPopState(wPainter *painter);
 void wPainterSetOrtho(wPainter *painter, float left, float right, float bottom, float top, float near, float far);
 void wPainterTranslate(wPainter *painter, float x, float y, float z);
 
+void wPainterBindRectMesh(wPainter *painter, wRect rect, wRect uv);
 void wPainterBindShader(wPainter *painter);
 void wPainterBindTexture(wPainter *painter, wTexture *tex, int index);
+void wPainterDrawCall(wPainter *painter);

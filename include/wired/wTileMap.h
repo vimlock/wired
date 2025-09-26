@@ -8,6 +8,7 @@ typedef struct _wTileLayer wTileLayer;
 typedef struct _wTileMap wTileMap;
 typedef struct _wPainter wPainter;
 typedef struct _wRect wRect;
+typedef struct _wString wString;
 
 enum wTileFlags
 {
@@ -32,3 +33,4 @@ void wTileLayerSetTile(wTileLayer *layer, int x, int y, wTileIndex index);
 void wTileLayerFill(wTileLayer *layer, int x, int y, int w, int h, wTileIndex index);
 wTileIndex wTileLayerGetTile(wTileLayer *layer, int x, int y);
 void wTileLayerSetSheet(wTileLayer *layer, int count, const wRect *rects);
+void wTileLayerSetTexture(wTileLayer *layer, const wString *texture);

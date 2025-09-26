@@ -2,9 +2,17 @@
 
 typedef struct _wString wString;
 typedef struct _wStatus wStatus;
+typedef struct _wPainter wPainter;
 
-/* ---------- Sprite Effect ----- */
-void wSpriteEffectRegister(const wString *name);
+typedef struct _wSpriteEffect wSpriteEffect;
+typedef struct _wSpriteParticles wSpriteParticles;
 
-/* ---------- Sprite Particles -- */
-void wSpriteParticlesRegister(const wString *name);
+wSpriteEffect *wSpriteEffectAlloc();
+void wSpriteEffectFree(wSpriteEffect *e);
+
+wSpriteParticles * wSpriteParticlesAlloc();
+void wSpriteParticlesFree(wSpriteParticles *p);
+void wSpriteParticlesSpawn(wSpriteParticles *p);
+void wSpriteParticlesUpdate(wSpriteParticles *p);
+void wSpriteParticlesDraw(wSpriteParticles *p, wPainter *painter);
+void wSpriteParticlesSetGravity(wSpriteParticles *p, float x, float y);
