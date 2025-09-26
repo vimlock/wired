@@ -1,6 +1,23 @@
-#include "../include/wired/wGame.h"
+#include "../include/wired/wItem.h"
+#include "../include/wired/wClass.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wAssert.h"
+
+#include <stddef.h>
+
+static const wClass wItemClass =
+{
+	.name = "Item",
+	.base = NULL,
+	.version = 1,
+};
+
+struct _wItem
+{
+	const wClass *cls;
+	wString *name;
+	wString *script;
+};
 
 void wItemRegister(const wString *name, const wString *script)
 {

@@ -14,6 +14,7 @@ enum wTileFlags
 	W_TILE_FLAG_NONE   = 0,
 	W_TILE_FLAG_FLIP_X = 1 << 0,
 	W_TILE_FLAG_FlIP_Y = 1 << 1,
+	W_TILE_FLAG_SOLID  = 1 << 2
 };
 
 typedef uint16_t wTileIndex;

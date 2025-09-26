@@ -1,6 +1,12 @@
-#include "../include/wired/wGame.h"
+#include "../include/wired/wAbility.h"
 #include "../include/wired/wError.h"
 #include "../include/wired/wAssert.h"
+
+struct _wAbility
+{
+	wString *name;
+	wString *script;
+};
 
 void wAbilityRegister(const wString *name, const wString *script)
 {

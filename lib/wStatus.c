@@ -1,5 +1,23 @@
-#include "../include/wired/wGame.h"
+#include "../include/wired/wStatus.h"
+#include "../include/wired/wClass.h"
 #include "../include/wired/wError.h"
+
+#include <stddef.h>
+
+static const wClass wStatusClass = {
+	.name = "Status",
+	.base = NULL,
+	.version = 1
+};
+
+struct _wStatus
+{
+	const wClass *cls;
+
+	wString *name;
+	wString *script;
+	wEntity *caster;
+};
 
 int wStatusRegister(const wString *name, const wString *script)
 {

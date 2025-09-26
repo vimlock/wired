@@ -1,6 +1,26 @@
-#include "../include/wired/wGame.h"
+#include "../include/wired/wEntity.h"
 #include "../include/wired/wAssert.h"
 #include "../include/wired/wError.h"
+
+struct _wEntity
+{
+	wString *name;
+
+	wAbility *ability;
+	int abilityCount;
+
+	wStatus *status;
+	int statusCount;
+
+	wItem *item;
+	int itemCount;
+
+	wSpriteEffect *effects;
+	int effectsCount;
+
+	wSpriteParticles *particles;
+	int particlesCount;
+};
 
 int wEntityReduceMana(const wEntity *entity)
 {

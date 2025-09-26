@@ -162,6 +162,7 @@ void wTileLayerLoadRegion(wTileLayer *layer, int x, int y, int w, int h)
 void wTileLayerDraw(wTileLayer *layer, wPainter *painter)
 {
 	wPainterBindShader(painter);
+	wPainterBindTexture(painter, NULL, 0);
 	layer->platform->draw(layer->numIndices, layer->vbo, layer->ibo);
 }
 
@@ -185,9 +186,6 @@ void wTileLayerSetTile(wTileLayer *layer, int x, int y, wTileIndex index)
 	wAssert(layer != NULL);
 	wAssert(x >= 0 && y >= 0);
 	wAssert(x < layer->width && y < layer->height);
-
-	wLogInfo("%d %d => %u", x, y, (unsigned)index);
-
 	layer->tiles[y * layer->width + x].index = index;
 }
 

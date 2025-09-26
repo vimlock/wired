@@ -43,7 +43,7 @@ painter:SetFont(font)
 painter:SetViewport(0, 0, 800, 600)
 
 canvas = GuiCanvas()
-layer = TileLayer(256, 256)
+layer = TileLayer(1024, 1024)
 layer:SetSheet({Rect(0, 0, 32, 32), Rect(0, 0, 32, 32)})
 
 layer:SetTile(0, 0, 1)

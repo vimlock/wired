@@ -39,3 +39,4 @@ void wPainterSetOrtho(wPainter *painter, float left, float right, float bottom, 
 void wPainterTranslate(wPainter *painter, float x, float y, float z);
 
 void wPainterBindShader(wPainter *painter);
+void wPainterBindTexture(wPainter *painter, wTexture *tex, int index);

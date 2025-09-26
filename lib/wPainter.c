@@ -175,6 +175,22 @@ void wPainterBindShader(wPainter *painter)
 	platform->shaderSetValue(shader, painter->uniformColor, W_SHADER_VEC4, &painter->state->color);
 }
 
+static void setTexture(wPainter *painter, wNativeHandle tex, int index)
+{
+	painter->platform->textureBind(tex, index);
+}
+
+void wPainterBindTexture(wPainter *painter, wTexture *tex, int index)
+{
+	wNativeHandle handle;
+	if (tex)
+		handle = wTextureGetNativeHandle(tex);
+	else
+		handle = painter->emptyTex;
+
+	setTexture(painter, handle, index);
+}
+
 static void drawRect(wPainter *painter, wRect rect)
 {
 	if (!painter->shader) {
@@ -188,11 +204,6 @@ static void drawRect(wPainter *painter, wRect rect)
 	wPainterBindShader(painter);
 
 	platform->draw(6, painter->vbo, painter->ibo);
-}
-
-static void setTexture(wPainter *painter, wNativeHandle tex, int index)
-{
-	painter->platform->textureBind(tex, index);
 }
 
 static int wPainterCheckSupported(wPlatformOps *p)
